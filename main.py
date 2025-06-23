@@ -5,6 +5,63 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
+import random
+writing_prompts = [
+    "Two strangers meet in a laundromat at 2 AM.",
+    "A letter is delivered 50 years late.",
+    "A character wakes up with a tattoo they don't remember getting.",
+    "The world has stopped spinning. What happens next?",
+    "Your protagonist finds a message in a bottle... from themselves.",
+    "Someone gets a voicemail from the future.",
+    "The moon is suddenly much closer. How does the world react?",
+    "A child draws something — and it becomes real.",
+    "You wake up in a world where your favorite book is reality.",
+    "Everyone can see the date they will die. Except one person.",
+    "A stranger offers you a suitcase full of money — with one condition.",
+    "An elevator stops on a floor that doesn't exist.",
+    "A character has never seen their own reflection.",
+    "You hear your favorite song. No one else does.",
+    "Time freezes for everyone but your protagonist.",
+    "Your character inherits a key. No one knows what it unlocks.",
+    "Every lie your character tells becomes true.",
+    "Your dreams start leaving physical evidence.",
+    "A character is followed by a cloud that rains only on them.",
+    "You receive a photo in the mail — of you sleeping.",
+    "You move into a new apartment and find a locked door with no key.",
+    "You're reborn every time you die — in a new body, but with all memories.",
+    "You find a hidden room in your house no one knew existed.",
+    "Everyone you touch hears your thoughts.",
+    "You receive a text from someone who died last year.",
+    "You can pause time, but only while holding your breath.",
+    "You wake up with someone else's memories.",
+    "A library book contains handwritten notes — in your handwriting.",
+    "A childhood imaginary friend suddenly appears as an adult.",
+    "You keep reliving the same hour over and over.",
+    "Every time you fall asleep, you wake up in a different reality.",
+    "Everyone gets one wish — yours comes true 10 years late.",
+    "You discover your life is a story being written by someone else.",
+    "A mirror shows a different version of you.",
+    "You can see the strings connecting people who love each other.",
+    "The stars vanish from the night sky.",
+    "Everyone in the world forgets your name overnight.",
+    "Your voice changes depending on who you talk to.",
+    "Your shadow starts acting on its own.",
+    "Rain never touches your skin — not once in your life.",
+    "Your house plants begin whispering secrets to you.",
+    "You write stories — and they come true.",
+    "You wake up speaking a language that doesn't exist.",
+    "Your phone shows texts from 100 years ago.",
+    "You open a book, and it describes exactly what you're doing right now.",
+    "You find a door labeled 'Do Not Open.' It opens itself.",
+    "Each time you look in the mirror, your reflection is older than you.",
+    "You sneeze and swap bodies with someone nearby.",
+    "You discover a second heartbeat inside your chest.",
+    "A bird follows you everywhere and speaks only in riddles.",
+    "You inherit a cabin. It has no doors.",
+    "You hear your name whispered in the wind — constantly."
+]
+
+
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 
@@ -104,6 +161,12 @@ async def poll(ctx, *, question):
     poll_message = await ctx.send(embed=embed)
     await poll_message.add_reaction("👍")
     await poll_message.add_reaction("👎")
+
+#random prompt
+@bot.command()
+async def prompt(ctx):
+    prompt = random.choice(writing_prompts)
+    await ctx.reply(f"📝 Writing Prompt:\n> {prompt}", mention_author=False)
 
 
 
