@@ -185,9 +185,10 @@ async def poll(ctx, *, question):
 #prompt command
 @tasks.loop(weeks=1)
 async def weekly_prompt():
-    channel = bot.get_channel(PROMPT_CHANNEL_ID)
-    if channel is None:
-        print("❌ Prompt channel not found.")
+    try:
+        channel = await bot.fetch_channel(PROMPT_CHANNEL_ID)
+    except Exception as e:
+        print(f"❌ Error fetching channel: {e}")
         return
 
     selected_prompt = random.choice(writing_prompts)
@@ -199,9 +200,15 @@ async def weekly_prompt():
     await channel.send(embed=embed)
 
 #manual prompt
-@bot.command()
 async def prompt(ctx):
-    await weekly_prompt()
+    # single prompt, not loop
+    selected_prompt = random.choice(writing_prompts)
+    embed = discord.Embed(
+        title="📝 Writing Prompt",
+        description=f"```{selected_prompt}```",
+        color=discord.Color.green()
+    )
+    await ctx.reply(embed=embed, mention_author=False)
 
 @bot.command()
 async def gif(ctx, *, search: str):
