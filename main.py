@@ -5,12 +5,13 @@ import random
 import threading
 
 import discord
-from discord.ext import commands
+from discord.ext import tasks, commands
 from dotenv import load_dotenv
 from flask import Flask
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
+channel_id = int(os.getenv("PROMPT_CHANNEL_ID"))
 
 # Dummy web server to keep Render happy
 app = Flask(__name__)
@@ -93,7 +94,9 @@ secret_role = "test"
 
 @bot.event
 async def on_ready():
-  print("I am here, father")
+    print("I am here, father")
+    if not weekly_prompt.is_running():
+        weekly_prompt.start()
 
 @bot.event
 async def on_member_join(member):
@@ -180,15 +183,25 @@ async def poll(ctx, *, question):
     await poll_message.add_reaction("👎")
 
 #prompt command
-@bot.command()
-async def prompt(ctx):
+@tasks.loop(weeks=1)
+async def weekly_prompt():
+    channel = bot.get_channel(PROMPT_CHANNEL_ID)
+    if channel is None:
+        print("❌ Prompt channel not found.")
+        return
+
     selected_prompt = random.choice(writing_prompts)
     embed = discord.Embed(
-        title="📝 New Writing Prompt",
-        description=selected_prompt,
-        color=discord.Color.green()
+        title="📝 Weekly Writing Prompt",
+        description=f"```{selected_prompt}```",
+        color=discord.Color.red()
     )
-    await ctx.reply(embed=embed, mention_author=False)
+    await channel.send(embed=embed)
+
+#manual prompt
+@bot.command()
+async def prompt(ctx):
+    await weekly_prompt()
 
 @bot.command()
 async def gif(ctx, *, search: str):
