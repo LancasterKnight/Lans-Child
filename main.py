@@ -183,7 +183,7 @@ async def poll(ctx, *, question):
     await poll_message.add_reaction("👎")
 
 #prompt command
-@tasks.loop(weeks=1)
+@tasks.loop(seconds=604800)
 async def weekly_prompt():
     try:
         channel = await bot.fetch_channel(PROMPT_CHANNEL_ID)
