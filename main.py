@@ -12,6 +12,7 @@ from flask import Flask
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 PROMPT_CHANNEL_ID = int(os.getenv("PROMPT_CHANNEL_ID"))
+COUNTER_CHANNEL_ID = int(os.getenv("COUNTER_CHANNEL_ID"))
 
 # Dummy web server to keep Render happy
 app = Flask(__name__)
@@ -100,7 +101,8 @@ async def on_ready():
     print("I am here, father")
     if not weekly_prompt.is_running():
         weekly_prompt.start()
-
+    if not keep_alive_counter.is_running():
+        keep_alive_counter.start()
 
 @bot.event
 async def on_member_join(member):
@@ -272,6 +274,30 @@ async def gif(ctx, *, search: str):
 
             gif_url = random.choice(results)['images']['original']['url']
             await ctx.reply(gif_url)
+
+
+#----counter----------
+counter = 0
+counter_message = None  # global reference to the message
+
+@tasks.loop(minutes=1)
+async def keep_alive_counter():
+    global counter, counter_message
+    channel = bot.get_channel(COUNTER_CHANNEL_ID)  # or a separate keep-alive channel
+    if channel is None:
+        print("❌ Keep-alive channel not found.")
+        return
+
+    counter += 1
+
+    try:
+        if counter_message is None:
+            counter_message = await channel.send(f"⏱️ Keep-alive counter: `{counter}` minutes")
+        else:
+            await counter_message.edit(content=f"⏱️ Keep-alive counter: `{counter}` minutes")
+    except Exception as e:
+        print(f"❌ Failed to send/edit keep-alive message: {e}")
+#--------------------
 
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
