@@ -27,7 +27,6 @@ def run_web():
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
 
-
 # Start web server in a separate thread
 threading.Thread(target=run_web).start()
 
@@ -297,7 +296,14 @@ async def keep_alive_counter():
             await counter_message.edit(content=f"⏱️ Keep-alive counter: `{counter}` minutes")
     except Exception as e:
         print(f"❌ Failed to send/edit keep-alive message: {e}")
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    print("✅ Ping received to keep alive.")
+    return "Bot is still running!"
 #--------------------
+
 
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
