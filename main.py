@@ -12,6 +12,7 @@ from flask import Flask
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 PROMPT_CHANNEL_ID = int(os.getenv("PROMPT_CHANNEL_ID"))
+current_weekly_prompt = None
 
 # Dummy web server to keep Render happy
 app = Flask(__name__)
@@ -182,31 +183,38 @@ async def poll(ctx, *, question):
     await poll_message.add_reaction("👍")
     await poll_message.add_reaction("👎")
 
-#prompt command
-@tasks.loop(seconds=604800)
+# weekly prompt
 async def weekly_prompt():
+    global current_weekly_prompt
     try:
         channel = await bot.fetch_channel(PROMPT_CHANNEL_ID)
+        if channel is None:
+            print("❌ Prompt channel not found.")
+            return
     except Exception as e:
-        print(f"❌ Error fetching channel: {e}")
+        print("❌ Error fetching channel:", e)
         return
 
-    selected_prompt = random.choice(writing_prompts)
+    current_weekly_prompt = random.choice(writing_prompts)
+
     embed = discord.Embed(
         title="📝 Weekly Writing Prompt",
-        description=f"```{selected_prompt}```",
+        description=f"```{current_weekly_prompt}```",
         color=discord.Color.red()
     )
     await channel.send(embed=embed)
 
 #manual prompt
+@bot.command()
 async def prompt(ctx):
-    # single prompt, not loop
-    selected_prompt = random.choice(writing_prompts)
+    if current_weekly_prompt is None:
+        await ctx.reply("⚠️ No weekly prompt has been posted yet.", mention_author=False)
+        return
+
     embed = discord.Embed(
-        title="📝 Writing Prompt",
-        description=f"```{selected_prompt}```",
-        color=discord.Color.green()
+        title="📝 Weekly Writing Prompt",
+        description=f"```{current_weekly_prompt}```",
+        color=discord.Color.red()
     )
     await ctx.reply(embed=embed, mention_author=False)
 
