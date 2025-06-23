@@ -200,7 +200,7 @@ async def gif(ctx, *, search: str):
                 await ctx.reply(f"❌ No GIFs found for `{search}`.")
                 return
 
-            gif_url = results[0]['images']['original']['url']
+            gif_url = random.choice(results)['images']['original']['url']
             await ctx.reply(gif_url)
 
 
