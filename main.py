@@ -1,11 +1,38 @@
 import logging
 import os
+import random
+import threading
 
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+from flask import Flask
 
-import random
+load_dotenv()
+token = os.getenv('DISCORD_TOKEN')
+
+# Dummy web server to keep Render happy
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Bot is running!"
+
+def run_web():
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
+
+# Start web server in a separate thread
+threading.Thread(target=run_web).start()
+
+
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+intents = discord.Intents.default()
+intents.message_content = True
+intents.members = True
+
+bot = commands.Bot(command_prefix='!', intents=intents)
+
 writing_prompts = [
     "Two strangers meet in a laundromat at 2 AM.",
     "A letter is delivered 50 years late.",
@@ -60,17 +87,6 @@ writing_prompts = [
     "You inherit a cabin. It has no doors.",
     "You hear your name whispered in the wind — constantly."
 ]
-
-
-load_dotenv()
-token = os.getenv('DISCORD_TOKEN')
-
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
-
-bot = commands.Bot(command_prefix='!', intents=intents)
 
 secret_role = "test"
 
@@ -165,8 +181,8 @@ async def poll(ctx, *, question):
 #random prompt
 @bot.command()
 async def prompt(ctx):
-    prompt = random.choice(writing_prompts)
-    await ctx.reply(f"📝 Writing Prompt:\n> {prompt}", mention_author=False)
+    prompts = random.choice(writing_prompts)
+    await ctx.reply(f"📝 Writing Prompt:\n> {prompts}", mention_author=False)
 
 
 
