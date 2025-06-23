@@ -12,22 +12,23 @@ from flask import Flask
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 PROMPT_CHANNEL_ID = int(os.getenv("PROMPT_CHANNEL_ID"))
-current_weekly_prompt = None
 
 # Dummy web server to keep Render happy
 app = Flask(__name__)
+
 
 @app.route('/')
 def home():
     return "Bot is running!"
 
+
 def run_web():
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
 
+
 # Start web server in a separate thread
 threading.Thread(target=run_web).start()
-
 
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 intents = discord.Intents.default()
@@ -93,37 +94,44 @@ writing_prompts = [
 
 secret_role = "test"
 
+
 @bot.event
 async def on_ready():
     print("I am here, father")
     if not weekly_prompt.is_running():
         weekly_prompt.start()
 
+
 @bot.event
 async def on_member_join(member):
-  await member.send(f"Welcome to the server, {member.name}!")
+    await member.send(f"Welcome to the server, {member.name}!")
+
 
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
         return
 
-#text filter
+    #text filter
     if "whiterose" in message.content.lower():
         await message.delete()
         await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
 
     await bot.process_commands(message)
 
+
 # !hello
 @bot.command()
 async def hello(ctx):
     await ctx.send(f"Hello, {ctx.author.mention}!")
 
+
 # !gold
 @bot.command()
 async def gold(ctx):
-    await ctx.send("You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/Lancaster_Knight/works!")
+    await ctx.send(
+        "You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/Lancaster_Knight/works!")
+
 
 # add role
 @bot.command()
@@ -146,16 +154,19 @@ async def remove(ctx):
     else:
         await ctx.send("The role does not exist.")
 
+
 # secret command
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def secret(ctx):
     await ctx.send("This is a secret message!")
 
+
 @secret.error
 async def secret_error(ctx, error):
     if isinstance(error, commands.MissingPermissions):
         await ctx.send("You do not have permission to use this command.")
+
 
 # dm command
 @bot.command()
@@ -170,10 +181,12 @@ async def dm(ctx, user_id: int, *, msg):
     else:
         await ctx.send("❌ User not found.")
 
+
 # reply command
 @bot.command()
 async def reply(ctx):
     await ctx.reply("I am replying to your message!")
+
 
 #poll command
 @bot.command()
@@ -183,40 +196,61 @@ async def poll(ctx, *, question):
     await poll_message.add_reaction("👍")
     await poll_message.add_reaction("👎")
 
-# weekly prompt
-async def weekly_prompt():
-    global current_weekly_prompt
-    try:
-        channel = await bot.fetch_channel(PROMPT_CHANNEL_ID)
-        if channel is None:
-            print("❌ Prompt channel not found.")
-            return
-    except Exception as e:
-        print("❌ Error fetching channel:", e)
-        return
 
+#--------------------------------------------------------
+
+current_weekly_prompt = None
+
+
+async def send_weekly_prompt(channel):
+    global current_weekly_prompt
     current_weekly_prompt = random.choice(writing_prompts)
 
     embed = discord.Embed(
         title="📝 Weekly Writing Prompt",
         description=f"```{current_weekly_prompt}```",
-        color=discord.Color.red()
+        color=discord.Color.purple()
     )
     await channel.send(embed=embed)
+
+
+#--------------------------------------------------------
+
+# weekly prompt
+@tasks.loop(seconds=604800)  # 1 week
+async def weekly_prompt():
+    try:
+        channel = await bot.fetch_channel(PROMPT_CHANNEL_ID)
+        if channel:
+            await send_weekly_prompt(channel)
+        else:
+            print("❌ Weekly prompt channel not found.")
+    except Exception as e:
+        print(f"❌ Error sending weekly prompt: {e}")
+
+
+#manual launch of prompt
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def startprompt(ctx):
+    """Manually trigger a new weekly prompt."""
+    await send_weekly_prompt(ctx.channel)
+    await ctx.reply("✅ Weekly prompt manually posted.")
+
 
 #manual prompt
 @bot.command()
 async def prompt(ctx):
     if current_weekly_prompt is None:
-        await ctx.reply("⚠️ No weekly prompt has been posted yet.", mention_author=False)
-        return
+        await ctx.reply("⚠️ No weekly prompt has been posted yet.")
+    else:
+        embed = discord.Embed(
+            title="📝 Current Weekly Prompt",
+            description=f"```{current_weekly_prompt}```",
+            color=discord.Color.green()
+        )
+        await ctx.reply(embed=embed)
 
-    embed = discord.Embed(
-        title="📝 Weekly Writing Prompt",
-        description=f"```{current_weekly_prompt}```",
-        color=discord.Color.red()
-    )
-    await ctx.reply(embed=embed, mention_author=False)
 
 @bot.command()
 async def gif(ctx, *, search: str):
@@ -235,8 +269,6 @@ async def gif(ctx, *, search: str):
 
             gif_url = random.choice(results)['images']['original']['url']
             await ctx.reply(gif_url)
-
-
 
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
