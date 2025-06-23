@@ -11,7 +11,7 @@ from flask import Flask
 
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
-channel_id = int(os.getenv("PROMPT_CHANNEL_ID"))
+PROMPT_CHANNEL_ID = int(os.getenv("PROMPT_CHANNEL_ID"))
 
 # Dummy web server to keep Render happy
 app = Flask(__name__)
