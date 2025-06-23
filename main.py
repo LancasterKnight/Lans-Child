@@ -179,11 +179,16 @@ async def poll(ctx, *, question):
     await poll_message.add_reaction("👍")
     await poll_message.add_reaction("👎")
 
-#random prompt
+#prompt command
 @bot.command()
 async def prompt(ctx):
-    prompts = random.choice(writing_prompts)
-    await ctx.reply(f"📝 Writing Prompt:\n> {prompts}", mention_author=False)
+    selected_prompt = random.choice(writing_prompts)
+    embed = discord.Embed(
+        title="📝 New Writing Prompt",
+        description=selected_prompt,
+        color=discord.Color.green()
+    )
+    await ctx.reply(embed=embed, mention_author=False)
 
 @bot.command()
 async def gif(ctx, *, search: str):
