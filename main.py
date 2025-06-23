@@ -202,54 +202,57 @@ async def poll(ctx, *, question):
 current_weekly_prompt = None
 
 
-async def send_weekly_prompt(channel):
+async def send_weekly_prompt():
     global current_weekly_prompt
     current_weekly_prompt = random.choice(writing_prompts)
 
     embed = discord.Embed(
         title="📝 Weekly Writing Prompt",
         description=f"```{current_weekly_prompt}```",
-        color=discord.Color.purple()
+        color=discord.Color.red()
     )
-    await channel.send(embed=embed)
+
+    channel = bot.get_channel(PROMPT_CHANNEL_ID)
+    if channel:
+        await channel.send(embed=embed)
+    else:
+        print("❌ Could not find prompt channel.")
 
 
 #--------------------------------------------------------
 
 # weekly prompt
-@tasks.loop(seconds=604800)  # 1 week
+@tasks.loop(seconds=604800)  # once a week
 async def weekly_prompt():
-    try:
-        channel = await bot.fetch_channel(PROMPT_CHANNEL_ID)
-        if channel:
-            await send_weekly_prompt(channel)
-        else:
-            print("❌ Weekly prompt channel not found.")
-    except Exception as e:
-        print(f"❌ Error sending weekly prompt: {e}")
+    await send_weekly_prompt()
 
 
-#manual launch of prompt
+#kickstart
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def startprompt(ctx):
-    """Manually trigger a new weekly prompt."""
-    await send_weekly_prompt(ctx.channel)
-    await ctx.reply("✅ Weekly prompt manually posted.")
+async def kickstartprompt(ctx):
+    await send_weekly_prompt()
+    await ctx.reply("✅ Prompt manually posted to the prompt channel.", mention_author=False)
 
 
 #manual prompt
 @bot.command()
 async def prompt(ctx):
     if current_weekly_prompt is None:
-        await ctx.reply("⚠️ No weekly prompt has been posted yet.")
+        await ctx.reply("⚠️ No weekly prompt has been posted yet.", mention_author=False)
     else:
         embed = discord.Embed(
             title="📝 Current Weekly Prompt",
             description=f"```{current_weekly_prompt}```",
             color=discord.Color.green()
         )
-        await ctx.reply(embed=embed)
+        channel = bot.get_channel(PROMPT_CHANNEL_ID)
+        if channel:
+            await channel.send(embed=embed)
+            await ctx.reply("✅ Prompt re-posted in the prompt channel.", mention_author=False)
+        else:
+            await ctx.reply("❌ Prompt channel not found.", mention_author=False)
+
 
 
 @bot.command()
