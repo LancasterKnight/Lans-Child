@@ -1,4 +1,5 @@
 import logging
+import aiohttp
 import os
 import random
 import threading
@@ -183,6 +184,24 @@ async def poll(ctx, *, question):
 async def prompt(ctx):
     prompts = random.choice(writing_prompts)
     await ctx.reply(f"📝 Writing Prompt:\n> {prompts}", mention_author=False)
+
+@bot.command()
+async def gif(ctx, *, search: str):
+    """Get a random GIF based on a search term."""
+    api_key = os.getenv("GIPHY_API_KEY")
+    url = f"https://api.giphy.com/v1/gifs/search?api_key={api_key}&q={search}&limit=50&offset=0&rating=g&lang=en"
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            data = await response.json()
+            results = data.get("data")
+
+            if not results:
+                await ctx.reply(f"❌ No GIFs found for `{search}`.")
+                return
+
+            gif_url = results[0]['images']['original']['url']
+            await ctx.reply(gif_url)
 
 
 
