@@ -252,10 +252,10 @@ async def gold(ctx):
 #async def secret(ctx):
 #    await ctx.send("This is a secret message!")
 
-@secret.error
-async def secret_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions):
-        await ctx.send("You do not have permission to use this command.")
+#@secret.error
+#async def secret_error(ctx, error):
+#    if isinstance(error, commands.MissingPermissions):
+#        await ctx.send("You do not have permission to use this command.")
 
 @bot.command()
 async def dm(ctx, user_id: int, *, msg):
