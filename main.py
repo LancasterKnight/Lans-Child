@@ -11,6 +11,7 @@ import discord
 from discord.ext import tasks, commands
 from dotenv import load_dotenv
 from flask import Flask
+from datetime import datetime, timedelta
 load_dotenv()
 
 token = os.getenv('DISCORD_TOKEN')
@@ -22,6 +23,24 @@ GITHUB_PROMPTS_URL = os.getenv("GITHUB_PROMPTS_URL")
 CURRENT_PROMPT_URL = os.getenv("CURRENT_PROMPT_URL")
 CURRENT_PROMPT_UPLOAD_URL = os.getenv("CURRENT_PROMPT_UPLOAD_URL")
 
+
+#check if 7 days passed since last prompt
+async def should_run_weekly_prompt():
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(CURRENT_PROMPT_UPLOAD_URL, headers=headers) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                last_update = data.get("commit", {}).get("committer", {}).get("date")
+                if last_update:
+                    last_time = datetime.fromisoformat(last_update.replace("Z", "+00:00"))
+                    return datetime.utcnow() - last_time > timedelta(days=7)
+    return True  # fallback to safe side
+    
 #fetch prompts from .txt file
 async def save_current_prompt_to_github(prompt):
     # First, fetch the current file info to get the SHA (required for updates)
@@ -91,7 +110,7 @@ async def on_ready():
         keep_alive_counter.start()
         
     global prompts, current_weekly_prompt
-    
+   
     # Load prompts from GitHub
     prompts = await fetch_prompts()
     if not prompts:
@@ -101,6 +120,8 @@ async def on_ready():
     current_weekly_prompt = await fetch_current_prompt()
 
     if not weekly_prompt.is_running():
+        if await should_run_weekly_prompt():
+            await weekly_prompt()
         weekly_prompt.start()
 
 
@@ -234,7 +255,7 @@ async def fetch_current_prompt():
         
 # --- Core Prompt Logic ---
 # weekly prompt timer
-@tasks.loop(seconds=604800)
+@tasks.loop(seconds=604800, wait=True)
 async def weekly_prompt():
     global current_weekly_prompt
 
