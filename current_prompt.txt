@@ -1,1 +1,1 @@
-An elevator stops on a floor that doesn't exist.
+You open a book, and it describes exactly what you're doing right now.
