@@ -1,2 +1,2 @@
-Prompt: A stranger offers you a suitcase full of money — with one condition.
-Timestamp: 2025-06-24T12:23:15.700749Z
+Prompt: You keep reliving the same hour over and over.
+Timestamp: 2025-06-24T12:35:13.104539Z
