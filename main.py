@@ -116,16 +116,14 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    #text filter
+    # text filter
     if "whiterose" in message.content.lower():
         await message.delete()
         await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
 
-    await bot.process_commands(message)
-
-    #bully Les moments
-if "28" in message.content.lower():
-    await message.channel.send("<@394034047258460162> they said the number, nerd")
+    # bully Les moments
+    if "28" in message.content.lower():
+        await message.channel.send("<@394034047258460162> they said the number, nerd")
 
     await bot.process_commands(message)
 
