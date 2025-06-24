@@ -32,6 +32,7 @@ COSMETIC_ROLES = {
     "blue": "Blue",
     "green": "Green",
     "purple": "Purple",
+}
 
 @app.route('/')
 def home():
