@@ -27,6 +27,12 @@ CURRENT_PROMPT_UPLOAD_URL = os.getenv("CURRENT_PROMPT_UPLOAD_URL")
 
 app = Flask(__name__)
 
+COSMETIC_ROLES = {
+    "red": "Red",
+    "blue": "Blue",
+    "green": "Green",
+    "purple": "Purple",
+
 @app.route('/')
 def home():
     print("✅ Ping received to keep alive.")
@@ -44,10 +50,26 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-secret_role = "test"
 counter = 0
 counter_message = None
 current_weekly_prompt = None
+# --- Role Utilities ---
+async def assign_cosmetic_role(member, role_name):
+    guild = member.guild
+    role_to_assign = discord.utils.get(guild.roles, name=role_name)
+
+    if not role_to_assign:
+        return f"❌ Role `{role_name}` not found."
+
+    # Remove any cosmetic roles they already have
+    roles_to_remove = [discord.utils.get(guild.roles, name=r) for r in COSMETIC_ROLES.values()]
+    roles_to_remove = [r for r in roles_to_remove if r in member.roles]
+    await member.remove_roles(*roles_to_remove)
+
+    # Add the new role
+    await member.add_roles(role_to_assign)
+    return f"✅ You now have the **{role_name}** role!"
+
 
 # --- Prompt Utilities ---
 async def should_run_weekly_prompt():
@@ -203,7 +225,6 @@ async def on_message(message):
 
 # --- Commands ---
 prompt_lock = asyncio.Lock()
-
 @bot.before_invoke
 async def ensure_prompt_loaded(ctx):
     global current_weekly_prompt
@@ -216,7 +237,7 @@ async def ensure_prompt_loaded(ctx):
                     if line.startswith("Prompt:"):
                         current_weekly_prompt = line.replace("Prompt:", "").strip()
                         print(f"✅ Prompt initialized during command call: {current_weekly_prompt}")
-
+# --- Commands ---
 @bot.command()
 async def hello(ctx):
     await ctx.send(f"Hello, {ctx.author.mention}!")
@@ -225,24 +246,10 @@ async def hello(ctx):
 async def gold(ctx):
     await ctx.send("You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/Lancaster_Knight/works!")
 
-@bot.command()
-async def assign(ctx):
-    role = discord.utils.get(ctx.guild.roles, name=secret_role)
-    if role:
-        await ctx.author.add_roles(role)
-        await ctx.send(f"{ctx.author.mention} has been assigned the role {secret_role}.")
-
-@bot.command()
-async def remove(ctx):
-    role = discord.utils.get(ctx.guild.roles, name=secret_role)
-    if role:
-        await ctx.author.remove_roles(role)
-        await ctx.send(f"{ctx.author.mention} has had the {secret_role} role removed.")
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def secret(ctx):
-    await ctx.send("This is a secret message!")
+#@bot.command()
+#@commands.has_permissions(administrator=True)
+#async def secret(ctx):
+#    await ctx.send("This is a secret message!")
 
 @secret.error
 async def secret_error(ctx, error):
@@ -303,6 +310,49 @@ async def gif(ctx, *, search: str):
                 return
             gif_url = random.choice(results)['images']['original']['url']
             await ctx.reply(gif_url)
+
+# --- Role command ---
+@bot.command()
+async def role(ctx, *, role_key: str = None):
+    if role_key is None:
+        await ctx.send("❓ Please specify a role, like `!role red`, or use `!role remove` to clear it.")
+        return
+
+    role_key = role_key.lower()
+
+    if role_key == "remove":
+        removed_roles = []
+        for r_name in COSMETIC_ROLES.values():
+            role = discord.utils.get(ctx.guild.roles, name=r_name)
+            if role and role in ctx.author.roles:
+                removed_roles.append(role)
+        if removed_roles:
+            await ctx.author.remove_roles(*removed_roles)
+            await ctx.send("✅ Cosmetic role removed.")
+        else:
+            await ctx.send("⚠️ You don’t have any cosmetic roles.")
+        return
+
+    if role_key not in COSMETIC_ROLES:
+        valid = ", ".join(COSMETIC_ROLES.keys())
+        await ctx.send(f"❌ Invalid role. Available roles are: `{valid}`.")
+        return
+
+    # Remove old roles
+    old_roles = [discord.utils.get(ctx.guild.roles, name=r) for r in COSMETIC_ROLES.values()]
+    old_roles = [r for r in old_roles if r in ctx.author.roles]
+    if old_roles:
+        await ctx.author.remove_roles(*old_roles)
+
+    # Add new role
+    new_role_name = COSMETIC_ROLES[role_key]
+    new_role = discord.utils.get(ctx.guild.roles, name=new_role_name)
+    if not new_role:
+        await ctx.send(f"❌ Role `{new_role_name}` does not exist on this server.")
+        return
+
+    await ctx.author.add_roles(new_role)
+    await ctx.send(f"✅ You now have the **{new_role_name}** role.")
 
 # --- Keep-Alive Counter ---
 @tasks.loop(minutes=1)
