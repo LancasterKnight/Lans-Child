@@ -202,6 +202,21 @@ async def on_message(message):
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
 # --- Commands ---
+prompt_lock = asyncio.Lock()
+
+@bot.before_invoke
+async def ensure_prompt_loaded(ctx):
+    global current_weekly_prompt
+    async with prompt_lock:
+        if current_weekly_prompt is None:
+            print("🔄 Attempting to load current prompt before command...")
+            current_prompt_data = await fetch_current_prompt()
+            if current_prompt_data:
+                for line in current_prompt_data.splitlines():
+                    if line.startswith("Prompt:"):
+                        current_weekly_prompt = line.replace("Prompt:", "").strip()
+                        print(f"✅ Prompt initialized during command call: {current_weekly_prompt}")
+
 @bot.command()
 async def hello(ctx):
     await ctx.send(f"Hello, {ctx.author.mention}!")
