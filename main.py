@@ -140,16 +140,15 @@ async def weekly_prompt_run_once():
     if not channel:
         print("❌ Prompt channel not found.")
         return
-
+        
+    now_utc = datetime.now(timezone.utc)
+    unix_ts = int(now_utc.timestamp())
     embed = discord.Embed(
         title="📝 Weekly Writing Prompt",
-        description=f"```{current_weekly_prompt}```",
+        description=f"```{current_weekly_prompt}```\n\nPosted at <t:{unix_ts}:F>",
         color=discord.Color.red()
     )
 
-    # Optional: add a timestamp field with UTC time
-    now_utc = datetime.now(timezone.utc)
-    unix_ts = int(now_utc.timestamp())
     embed.set_footer(text=f"Posted at <t:{unix_ts}:F>")
 
     await channel.send(embed=embed)
