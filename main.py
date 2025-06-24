@@ -121,8 +121,7 @@ async def on_ready():
 
     if not weekly_prompt.is_running():
         if await should_run_weekly_prompt():
-            await weekly_prompt()
-        weekly_prompt.start()
+           weekly_prompt.start()
 
 
 @bot.event
@@ -255,9 +254,12 @@ async def fetch_current_prompt():
         
 # --- Core Prompt Logic ---
 # weekly prompt timer
-@tasks.loop(seconds=604800)
+@tasks.loop(hours=1)
 async def weekly_prompt():
     global current_weekly_prompt
+
+    if not await should_run_weekly_prompt():
+        return  # too soon
 
     prompts = await fetch_prompts()
     if not prompts:
@@ -279,7 +281,7 @@ async def weekly_prompt():
     )
     await channel.send(embed=embed)
 
-    # Save current prompt to GitHub
+    # Save to GitHub (which records timestamp)
     await save_current_prompt_to_github(current_weekly_prompt)
 
 #kickstart
