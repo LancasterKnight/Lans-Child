@@ -1,2 +1,2 @@
-You receive a text from someone who died last year.
-Timestamp: 2025-06-24T12:00:00Z
+Prompt: Time freezes for everyone but your protagonist.
+Timestamp: 2025-06-24T11:26:09.414056Z
