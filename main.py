@@ -255,7 +255,7 @@ async def fetch_current_prompt():
         
 # --- Core Prompt Logic ---
 # weekly prompt timer
-@tasks.loop(seconds=604800, wait=True)
+@tasks.loop(seconds=604800)
 async def weekly_prompt():
     global current_weekly_prompt
 
