@@ -11,8 +11,10 @@ import discord
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from flask import Flask
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
+LOCAL_TZ = ZoneInfo("Europe/Malta")
 load_dotenv()
 
 token = os.getenv('DISCORD_TOKEN')
@@ -64,8 +66,12 @@ async def should_run_weekly_prompt():
                     for line in lines:
                         if line.startswith("Timestamp:"):
                             timestamp_str = line.replace("Timestamp:", "").strip()
-                            last_time = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
-                            delta = datetime.utcnow() - last_time
+                            last_time = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))  # UTC aware
+                            now_local = datetime.now(LOCAL_TZ)
+                            now_utc = now_local.astimezone(timezone.utc)
+                            delta = now_utc - last_time
+
+                            delta = now_utc - last_time
                             print(f"⏱️ It's been {delta.days} days since last prompt.")
                             return delta > timedelta(days=7)
             print("⚠️ No timestamp found. Resetting prompt.")
@@ -101,7 +107,8 @@ async def save_current_prompt_to_github(prompt):
         "Accept": "application/vnd.github.v3+json"
     }
     # New content with timestamp
-    now_iso = datetime.utcnow().isoformat() + "Z"
+    now_local = datetime.now(LOCAL_TZ)
+    now_iso = now_local.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
     content_raw = f"Prompt: {prompt}\nTimestamp: {now_iso}"
     content_b64 = base64.b64encode(content_raw.encode()).decode()
 
@@ -134,7 +141,17 @@ async def weekly_prompt_run_once():
         print("❌ Prompt channel not found.")
         return
 
-    embed = discord.Embed(title="📝 Weekly Writing Prompt", description=f"```{current_weekly_prompt}```", color=discord.Color.red())
+    embed = discord.Embed(
+        title="📝 Weekly Writing Prompt",
+        description=f"```{current_weekly_prompt}```",
+        color=discord.Color.red()
+    )
+
+    # Optional: add a timestamp field with UTC time
+    now_utc = datetime.now(timezone.utc)
+    unix_ts = int(now_utc.timestamp())
+    embed.set_footer(text=f"Posted at <t:{unix_ts}:F>")
+
     await channel.send(embed=embed)
     await save_current_prompt_to_github(current_weekly_prompt)
 
