@@ -149,7 +149,7 @@ async def weekly_prompt_run_once():
         color=discord.Color.red()
     )
 
-    embed.set_footer(text=f"Posted at <t:{unix_ts}:F>")
+    embed.set_footer(text=f"Enjoy!")
 
     await channel.send(embed=embed)
     await save_current_prompt_to_github(current_weekly_prompt)
