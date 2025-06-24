@@ -11,6 +11,7 @@ import discord
 from discord.ext import tasks, commands
 from dotenv import load_dotenv
 from flask import Flask
+load_dotenv()
 
 token = os.getenv('DISCORD_TOKEN')
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -22,9 +23,6 @@ CURRENT_PROMPT_URL = os.getenv("CURRENT_PROMPT_URL")
 CURRENT_PROMPT_UPLOAD_URL = os.getenv("CURRENT_PROMPT_UPLOAD_URL")
 
 #fetch prompts from .txt file
-import base64
-import json
-
 async def save_current_prompt_to_github(prompt):
     # First, fetch the current file info to get the SHA (required for updates)
     headers = {
@@ -64,9 +62,9 @@ async def save_current_prompt_to_github(prompt):
 app = Flask(__name__)
 
 
-@app.route('/')
-def home():
-    return "Bot is running!"
+#@app.route('/')
+#def home():
+#    return "Bot is running!"
 
 
 def run_web():
