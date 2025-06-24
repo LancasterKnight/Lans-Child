@@ -3,16 +3,62 @@ import aiohttp
 import os
 import random
 import threading
-
+import asyncio
+import base64
+import json
 import discord
+
 from discord.ext import tasks, commands
 from dotenv import load_dotenv
 from flask import Flask
 
-load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
-PROMPT_CHANNEL_ID = int(os.getenv("PROMPT_CHANNEL_ID"))
-COUNTER_CHANNEL_ID = int(os.getenv("COUNTER_CHANNEL_ID"))
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+PROMPT_CHANNEL_ID = os.getenv("PROMPT_CHANNEL_ID")
+COUNTER_CHANNEL_ID = os.getenv("COUNTER_CHANNEL_ID")
+#PROMPT_FILE_PATH = "prompts.txt"
+GITHUB_PROMPTS_URL = os.getenv("GITHUB_PROMPTS_URL")
+CURRENT_PROMPT_URL = os.getenv("CURRENT_PROMPT_URL")
+CURRENT_PROMPT_UPLOAD_URL = os.getenv("CURRENT_PROMPT_UPLOAD_URL")
+
+#fetch prompts from .txt file
+import base64
+import json
+
+async def save_current_prompt_to_github(prompt):
+    # First, fetch the current file info to get the SHA (required for updates)
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(CURRENT_PROMPT_UPLOAD_URL, headers=headers) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                sha = data["sha"]
+            else:
+                print(f"❌ Could not get SHA for current_prompt.txt: {resp.status}")
+                sha = None
+
+        content_b64 = base64.b64encode(prompt.encode()).decode()
+
+        payload = {
+            "message": "Update current weekly prompt",
+            "content": content_b64,
+            "branch": "main"
+        }
+
+        if sha:
+            payload["sha"] = sha
+
+        async with session.put(CURRENT_PROMPT_UPLOAD_URL, headers=headers, data=json.dumps(payload)) as update_resp:
+            if update_resp.status in (200, 201):
+                print("✅ Successfully updated current_prompt.txt on GitHub")
+            else:
+                text = await update_resp.text()
+                print(f"❌ Failed to update current_prompt.txt: {update_resp.status} - {text}")
+
 
 # Dummy web server to keep Render happy
 app = Flask(__name__)
@@ -37,71 +83,28 @@ intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-writing_prompts = [
-    "Two strangers meet in a laundromat at 2 AM.",
-    "A letter is delivered 50 years late.",
-    "A character wakes up with a tattoo they don't remember getting.",
-    "The world has stopped spinning. What happens next?",
-    "Your protagonist finds a message in a bottle... from themselves.",
-    "Someone gets a voicemail from the future.",
-    "The moon is suddenly much closer. How does the world react?",
-    "A child draws something — and it becomes real.",
-    "You wake up in a world where your favorite book is reality.",
-    "Everyone can see the date they will die. Except one person.",
-    "A stranger offers you a suitcase full of money — with one condition.",
-    "An elevator stops on a floor that doesn't exist.",
-    "A character has never seen their own reflection.",
-    "You hear your favorite song. No one else does.",
-    "Time freezes for everyone but your protagonist.",
-    "Your character inherits a key. No one knows what it unlocks.",
-    "Every lie your character tells becomes true.",
-    "Your dreams start leaving physical evidence.",
-    "A character is followed by a cloud that rains only on them.",
-    "You receive a photo in the mail — of you sleeping.",
-    "You move into a new apartment and find a locked door with no key.",
-    "You're reborn every time you die — in a new body, but with all memories.",
-    "You find a hidden room in your house no one knew existed.",
-    "Everyone you touch hears your thoughts.",
-    "You receive a text from someone who died last year.",
-    "You can pause time, but only while holding your breath.",
-    "You wake up with someone else's memories.",
-    "A library book contains handwritten notes — in your handwriting.",
-    "A childhood imaginary friend suddenly appears as an adult.",
-    "You keep reliving the same hour over and over.",
-    "Every time you fall asleep, you wake up in a different reality.",
-    "Everyone gets one wish — yours comes true 10 years late.",
-    "You discover your life is a story being written by someone else.",
-    "A mirror shows a different version of you.",
-    "You can see the strings connecting people who love each other.",
-    "The stars vanish from the night sky.",
-    "Everyone in the world forgets your name overnight.",
-    "Your voice changes depending on who you talk to.",
-    "Your shadow starts acting on its own.",
-    "Rain never touches your skin — not once in your life.",
-    "Your house plants begin whispering secrets to you.",
-    "You write stories — and they come true.",
-    "You wake up speaking a language that doesn't exist.",
-    "Your phone shows texts from 100 years ago.",
-    "You open a book, and it describes exactly what you're doing right now.",
-    "You find a door labeled 'Do Not Open.' It opens itself.",
-    "Each time you look in the mirror, your reflection is older than you.",
-    "You sneeze and swap bodies with someone nearby.",
-    "You discover a second heartbeat inside your chest.",
-    "A bird follows you everywhere and speaks only in riddles.",
-    "You inherit a cabin. It has no doors.",
-    "You hear your name whispered in the wind — constantly."
-]
-
 secret_role = "test"
-
 
 @bot.event
 async def on_ready():
     print("I am here, father")
-    if not weekly_prompt.is_running():
-        weekly_prompt.start()
+    
     if not keep_alive_counter.is_running():
         keep_alive_counter.start()
+        
+    global prompts, current_weekly_prompt
+    
+    # Load prompts from GitHub
+    prompts = await fetch_prompts()
+    if not prompts:
+        print("⚠️ No prompts loaded.")
+
+    # Load current prompt
+    current_weekly_prompt = await fetch_current_prompt()
+
+    if not weekly_prompt.is_running():
+        weekly_prompt.start()
+
 
 @bot.event
 async def on_member_join(member):
@@ -114,9 +117,15 @@ async def on_message(message):
         return
 
     #text filter
-    if "whiterose" in message.content.lower():
-        await message.delete()
-        await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
+#    if "whiterose" in message.content.lower():
+#        await message.delete()
+#        await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
+
+#    await bot.process_commands(message)
+
+    #bully Les moments
+    if "28" in message.content.lower():
+        await ctx.reply("<@394034047258460162> they said the number, nerd")
 
     await bot.process_commands(message)
 
@@ -198,54 +207,67 @@ async def poll(ctx, *, question):
     await poll_message.add_reaction("👎")
 
 
-#--------------------------------------------------------
-
+#----Prompt stuff----------------------------------------------------
+# --- Utility Functions ---
 current_weekly_prompt = None
 
+def save_current_prompt(prompt):
+    with open(CURRENT_PROMPT_FILE, "w", encoding="utf-8") as f:
+        f.write(prompt)
 
-async def send_weekly_prompt():
+def load_current_prompt():
+    if not os.path.exists(CURRENT_PROMPT_FILE):
+        return None
+    with open(CURRENT_PROMPT_FILE, "r", encoding="utf-8") as f:
+        return f.read().strip()
+        
+# --- Core Prompt Logic ---
+# weekly prompt timer
+@tasks.loop(hours=24*7)
+async def weekly_prompt():
     global current_weekly_prompt
-    current_weekly_prompt = random.choice(writing_prompts)
+
+    prompts = await fetch_prompts()
+    if not prompts:
+        print("⚠️ No prompts found to post.")
+        return
+
+    current_weekly_prompt = random.choice(prompts)
+
+    # Post prompt to designated channel
+    channel = bot.get_channel(PROMPT_CHANNEL_ID)
+    if not channel:
+        print("❌ Prompt channel not found.")
+        return
 
     embed = discord.Embed(
         title="📝 Weekly Writing Prompt",
         description=f"```{current_weekly_prompt}```",
         color=discord.Color.red()
     )
+    await channel.send(embed=embed)
 
-    channel = bot.get_channel(PROMPT_CHANNEL_ID)
-    if channel:
-        await channel.send(embed=embed)
-    else:
-        print("❌ Could not find prompt channel.")
-
-
-#--------------------------------------------------------
-
-# weekly prompt
-@tasks.loop(seconds=604800)  # once a week
-async def weekly_prompt():
-    await send_weekly_prompt()
-
+    # Save current prompt to GitHub
+    await save_current_prompt_to_github(current_weekly_prompt)
 
 #kickstart
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def kickstartprompt(ctx):
     await send_weekly_prompt()
-    await ctx.reply("✅ Prompt manually posted to the prompt channel.", mention_author=False)
-
+    await ctx.reply("✅ Prompt manually reset in the prompt channel.", mention_author=False)
 
 #manual prompt
 @bot.command()
 async def prompt(ctx):
+    global current_weekly_prompt
     if current_weekly_prompt is None:
         await ctx.reply("⚠️ No weekly prompt has been posted yet.", mention_author=False)
     else:
         embed = discord.Embed(
             title="📝 Current Weekly Prompt",
             description=f"```{current_weekly_prompt}```",
-            color=discord.Color.green()
+            color=discord.Color.orange()
         )
         channel = bot.get_channel(PROMPT_CHANNEL_ID)
         if channel:
@@ -254,6 +276,7 @@ async def prompt(ctx):
         else:
             await ctx.reply("❌ Prompt channel not found.", mention_author=False)
 
+#--------------------------------------------------------
 
 
 @bot.command()
