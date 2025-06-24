@@ -120,10 +120,10 @@ async def on_message(message):
         await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
 
     # bully Les moments
-    if "28" in message.content.lower():
-        await message.channel.send("<@394034047258460162> they said the number, nerd")
+#    if "28" in message.content.lower():
+#        await message.channel.send("<@394034047258460162> they said the number, nerd")
 
-    await bot.process_commands(message)
+#    await bot.process_commands(message)
 
 
 # !hello
@@ -234,7 +234,7 @@ async def fetch_current_prompt():
         
 # --- Core Prompt Logic ---
 # weekly prompt timer
-@tasks.loop(hours=24*7)
+@tasks.loop(seconds=604800)
 async def weekly_prompt():
     global current_weekly_prompt
 
