@@ -129,16 +129,20 @@ async def weekly_prompt_run_once():
 # --- Events ---
 @bot.event
 async def on_ready():
-    print("I am here, father")
+    print("I am here, father.")
     if not keep_alive_counter.is_running():
         keep_alive_counter.start()
+    if not prompt_scheduler.is_running():
+        prompt_scheduler.start()
 
-    global current_weekly_prompt
-    prompts = await fetch_prompts()
-    current_weekly_prompt = await fetch_current_prompt()
-
+@tasks.loop(hours=1)
+async def prompt_scheduler():
+    print("🕒 Checking if weekly prompt needs to update...")
     if await should_run_weekly_prompt():
+        print("✅ It's time! Posting a new weekly prompt.")
         await weekly_prompt_run_once()
+    else:
+        print("⏳ Not time yet for a new prompt.")
 
 @bot.event
 async def on_member_join(member):
