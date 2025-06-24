@@ -14,8 +14,8 @@ from flask import Flask
 
 token = os.getenv('DISCORD_TOKEN')
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-PROMPT_CHANNEL_ID = os.getenv("PROMPT_CHANNEL_ID")
-COUNTER_CHANNEL_ID = os.getenv("COUNTER_CHANNEL_ID")
+PROMPT_CHANNEL_ID = int(os.getenv("PROMPT_CHANNEL_ID"))
+COUNTER_CHANNEL_ID = int(os.getenv("COUNTER_CHANNEL_ID"))
 #PROMPT_FILE_PATH = "prompts.txt"
 GITHUB_PROMPTS_URL = os.getenv("GITHUB_PROMPTS_URL")
 CURRENT_PROMPT_URL = os.getenv("CURRENT_PROMPT_URL")
@@ -117,15 +117,15 @@ async def on_message(message):
         return
 
     #text filter
-#    if "whiterose" in message.content.lower():
-#        await message.delete()
-#        await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
+    if "whiterose" in message.content.lower():
+        await message.delete()
+        await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
 
-#    await bot.process_commands(message)
+    await bot.process_commands(message)
 
     #bully Les moments
-    if "28" in message.content.lower():
-        await ctx.reply("<@394034047258460162> they said the number, nerd")
+if "28" in message.content.lower():
+    await message.channel.send("<@394034047258460162> they said the number, nerd")
 
     await bot.process_commands(message)
 
@@ -211,15 +211,30 @@ async def poll(ctx, *, question):
 # --- Utility Functions ---
 current_weekly_prompt = None
 
-def save_current_prompt(prompt):
-    with open(CURRENT_PROMPT_FILE, "w", encoding="utf-8") as f:
-        f.write(prompt)
+async def fetch_prompts():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(GITHUB_PROMPTS_URL) as resp:
+            if resp.status == 200:
+                text = await resp.text()
+                return [line.strip() for line in text.splitlines() if line.strip()]
+            else:
+                print(f"❌ Failed to fetch prompts: {resp.status}")
+                return []
 
-def load_current_prompt():
-    if not os.path.exists(CURRENT_PROMPT_FILE):
-        return None
-    with open(CURRENT_PROMPT_FILE, "r", encoding="utf-8") as f:
-        return f.read().strip()
+async def fetch_current_prompt():
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    async with aiohttp.ClientSession() as session:
+        async with session.get(CURRENT_PROMPT_UPLOAD_URL, headers=headers) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                content_b64 = data.get("content")
+                if content_b64:
+                    return base64.b64decode(content_b64).decode().strip()
+            print(f"❌ Failed to fetch current prompt: {resp.status}")
+            return None
         
 # --- Core Prompt Logic ---
 # weekly prompt timer
@@ -253,8 +268,8 @@ async def weekly_prompt():
 #kickstart
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def kickstartprompt(ctx):
-    await send_weekly_prompt()
+async def forceprompt(ctx):
+    await weekly_prompt()
     await ctx.reply("✅ Prompt manually reset in the prompt channel.", mention_author=False)
 
 #manual prompt
@@ -319,7 +334,6 @@ async def keep_alive_counter():
             await counter_message.edit(content=f"⏱️ Keep-alive counter: `{counter}` minutes")
     except Exception as e:
         print(f"❌ Failed to send/edit keep-alive message: {e}")
-app = Flask(__name__)
 
 @app.route('/')
 def home():
