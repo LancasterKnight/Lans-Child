@@ -57,11 +57,19 @@ async def should_run_weekly_prompt():
         async with session.get(CURRENT_PROMPT_UPLOAD_URL, headers=headers) as resp:
             if resp.status == 200:
                 data = await resp.json()
-                last_update = data.get("commit", {}).get("committer", {}).get("date")
-                if last_update:
-                    last_time = datetime.fromisoformat(last_update.replace("Z", "+00:00"))
-                    return datetime.utcnow() - last_time > timedelta(days=7)
-    return True
+                content_b64 = data.get("content")
+                if content_b64:
+                    content = base64.b64decode(content_b64).decode()
+                    lines = content.splitlines()
+                    for line in lines:
+                        if line.startswith("Timestamp:"):
+                            timestamp_str = line.replace("Timestamp:", "").strip()
+                            last_time = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+                            delta = datetime.utcnow() - last_time
+                            print(f"⏱️ It's been {delta.days} days since last prompt.")
+                            return delta > timedelta(days=7)
+            print("⚠️ No timestamp found. Resetting prompt.")
+            return True
 
 async def fetch_prompts():
     async with aiohttp.ClientSession() as session:
@@ -92,11 +100,15 @@ async def save_current_prompt_to_github(prompt):
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json"
     }
+    # New content with timestamp
+    now_iso = datetime.utcnow().isoformat() + "Z"
+    content_raw = f"Prompt: {prompt}\nTimestamp: {now_iso}"
+    content_b64 = base64.b64encode(content_raw.encode()).decode()
+
     async with aiohttp.ClientSession() as session:
         async with session.get(CURRENT_PROMPT_UPLOAD_URL, headers=headers) as resp:
             sha = (await resp.json()).get("sha") if resp.status == 200 else None
 
-        content_b64 = base64.b64encode(prompt.encode()).decode()
         payload = {
             "message": "Update current weekly prompt",
             "content": content_b64,
