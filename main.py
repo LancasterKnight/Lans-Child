@@ -155,7 +155,7 @@ async def on_message(message):
     if "28" in message.content.lower():
         await message.reply("<@394034047258460162> they said the number! Nerd.")
 
-    if "MILK & CEREAL" in message.content.lower():
+    if "milk & cereal" in message.content.lower():
         await message.reply("Delusional. smh")
 
     await bot.process_commands(message)  # <- This line is required to make !commands work
