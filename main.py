@@ -158,6 +158,15 @@ async def weekly_prompt_run_once():
 @bot.event
 async def on_ready():
     print("I am here, father.")
+    
+    # Fetch the current prompt from GitHub on startup
+    current_prompt_data = await fetch_current_prompt()
+    if current_prompt_data:
+        for line in current_prompt_data.splitlines():
+            if line.startswith("Prompt:"):
+                current_weekly_prompt = line.replace("Prompt:", "").strip()
+                print(f"📌 Current weekly prompt loaded: {current_weekly_prompt}")
+    
     if not keep_alive_counter.is_running():
         keep_alive_counter.start()
     if not prompt_scheduler.is_running():
