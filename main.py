@@ -82,8 +82,13 @@ async def save_cosmetic_roles_to_github(data: dict):
             payload["sha"] = sha
 
         async with session.put(COSMETIC_ROLES_UPLOAD_URL, headers=headers, data=json.dumps(payload)) as update_resp:
-            if update_resp.status not in (200, 201):
+            if update_resp.status in (200, 201):
+                print("✅ Successfully updated cosmetic_roles.json.")
+                return True  # <-- ADD THIS
+            else:
                 print(f"❌ Failed to update cosmetic_roles.json: {update_resp.status} - {await update_resp.text()}")
+                return False  # <-- ADD THIS
+
 
 # --- Prompt Utilities ---
 async def should_run_weekly_prompt():
@@ -347,11 +352,15 @@ async def addcosmetic(ctx, key: str = None, *, role_name: str = None):
 
     COSMETIC_ROLES[key.lower()] = role_name
     print(f"[DEBUG] Updated COSMETIC_ROLES: {COSMETIC_ROLES}")
+    
+# --- temp check ---
+    await ctx.send(f"✅ (DEBUG) Added cosmetic role `{role_name}` with key `{key}` locally.")
+# --- temp check ---
 
     # Save back to GitHub
     result = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
     if result:
-        await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key}`.")
+#        await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key}`.")
     else:
         await ctx.send("❌ Failed to save cosmetic roles to GitHub.")
 
