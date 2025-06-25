@@ -14,6 +14,7 @@ from flask import Flask
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+prompt_lock = asyncio.Lock()
 LOCAL_TZ = ZoneInfo("Europe/Malta")
 load_dotenv()
 
@@ -190,7 +191,7 @@ async def weekly_prompt_run_once():
 # --- Events ---
 @bot.event
 async def on_ready():
-    global COSMETIC_ROLES
+    global COSMETIC_ROLES, current_weekly_prompt
     
     print("I am here, father.")
 
