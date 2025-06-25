@@ -61,13 +61,13 @@ async def fetch_cosmetic_roles():
             print(f"❌ Failed to fetch cosmetic roles: {resp.status}")
             return {}
 
-async def save_cosmetic_roles_to_github(data: dict):
+async def save_cosmetic_roles_to_github(roles: dict) -> bool:
     headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json"
     }
 
-    content_b64 = base64.b64encode(json.dumps(data, indent=2).encode()).decode()
+    content_b64 = base64.b64encode(json.dumps(roles, indent=2).encode()).decode()
 
     async with aiohttp.ClientSession() as session:
         async with session.get(COSMETIC_ROLES_UPLOAD_URL, headers=headers) as resp:
@@ -353,14 +353,11 @@ async def addcosmetic(ctx, key: str = None, *, role_name: str = None):
     COSMETIC_ROLES[key.lower()] = role_name
     print(f"[DEBUG] Updated COSMETIC_ROLES: {COSMETIC_ROLES}")
     
-# --- temp check ---
-    await ctx.send(f"✅ (DEBUG) Added cosmetic role `{role_name}` with key `{key}` locally.")
-# --- temp check ---
 
     # Save back to GitHub
     result = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
     if result:
-#        await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key}`.")
+        await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key}`.")
         pass
     else:
         await ctx.send("❌ Failed to save cosmetic roles to GitHub.")
