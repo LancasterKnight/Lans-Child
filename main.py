@@ -264,25 +264,39 @@ async def on_message(message):
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        await message.reply(random.choice(responses))
+        await message.channel.send(random.choice(responses))
 
     trigger_phrases = ["oz", "ozma", "ozpin"]
     responses = [
         "*REEEEEEEEEEEEEEEEEEEEE*",
-        "This it the beginning of the end, Ozpin.",
+        "This is the beginning of the end, Ozpin.",
         "NO!",
         "So small, this new host of yours.",
-        "My long-lost Ozma, found at last."
-        "The lies come out of you so easily."
-        "Darling, you still owe me half your spine!"
-        "Back from the dead? Pity."
-        "I’d say you’ve aged like wine—but vinegar is more accurate."
-        "Darling, you still owe me half your spine!"
+        "My long-lost Ozma, found at last.",
+        "The lies come out of you so easily.",
+        "Darling, you still owe me half your spine!",
+        "Back from the dead? Pity.",
+        "I’d say you’ve aged like wine—but vinegar is more accurate.",
+        "Darling, you still owe me half your spine!",
         "Still using that face? Bold."
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        await message.reply(random.choice(responses))
+        await message.channel.send(random.choice(responses))
+
+    trigger_phrases = ["lancaster", "ladybug"]
+    responses = [
+        "Objectively the best.",
+        "Glorious.",
+        "I must say, I do like your style.",
+        "This is the only path to glory.",
+        "I asked Jinn, she tells me this is OTP."
+        "Peak."
+     ]
+
+    if any(phrase in message.content.lower() for phrase in trigger_phrases):
+        await message.channel.send(random.choice(responses))
+
 
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
