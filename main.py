@@ -361,6 +361,7 @@ async def addcosmetic(ctx, key: str = None, *, role_name: str = None):
     result = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
     if result:
 #        await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key}`.")
+        pass
     else:
         await ctx.send("❌ Failed to save cosmetic roles to GitHub.")
 
