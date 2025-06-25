@@ -57,7 +57,12 @@ async def fetch_cosmetic_roles():
     async with aiohttp.ClientSession() as session:
         async with session.get(COSMETIC_ROLES_URL) as resp:
             if resp.status == 200:
-                return await resp.json()
+                try:
+                    return await resp.json()
+                except:
+                    text = await resp.text()
+                    print(f"⚠️ Could not parse JSON. Got: {text[:100]}")
+                    return {}
             print(f"❌ Failed to fetch cosmetic roles: {resp.status}")
             return {}
 
