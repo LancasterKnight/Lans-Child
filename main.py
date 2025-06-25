@@ -26,7 +26,7 @@ GITHUB_PROMPTS_URL = os.getenv("GITHUB_PROMPTS_URL")
 CURRENT_PROMPT_URL = os.getenv("CURRENT_PROMPT_URL")
 CURRENT_PROMPT_UPLOAD_URL = os.getenv("CURRENT_PROMPT_UPLOAD_URL")
 COSMETIC_ROLES_URL = os.getenv("COSMETIC_ROLES_URL")
-COSMETIC_ROLES_UPLOAD_URL = os.getenv("COSMETIC_ROLES_UPLOAD_URL")
+COSMETIC_ROLES_UPLOAD_URL = "https://api.github.com/repos/LancasterKnight/Lans-Child/contents/cosmetic_roles.json"
 
 app = Flask(__name__)
 
@@ -70,12 +70,16 @@ async def fetch_cosmetic_roles():
     return COSMETIC_ROLES
 
 async def save_cosmetic_roles_to_github(roles: dict) -> bool:
-
     content_b64 = base64.b64encode(json.dumps(roles, indent=2).encode()).decode()
 
     async with aiohttp.ClientSession() as session:
+        # Fetch the file SHA for update
         async with session.get(COSMETIC_ROLES_UPLOAD_URL, headers=headers) as resp:
-            sha = (await resp.json()).get("sha") if resp.status == 200 else None
+            if resp.status != 200:
+                print(f"❌ Failed to fetch sha for cosmetic_roles.json: {resp.status}")
+                return False
+            resp_json = await resp.json()
+            sha = resp_json.get("sha")
 
         payload = {
             "message": "Update cosmetic_roles.json",
@@ -88,10 +92,10 @@ async def save_cosmetic_roles_to_github(roles: dict) -> bool:
         async with session.put(COSMETIC_ROLES_UPLOAD_URL, headers=headers, data=json.dumps(payload)) as update_resp:
             if update_resp.status in (200, 201):
                 print("✅ Successfully updated cosmetic_roles.json.")
-                return True  # <-- ADD THIS
+                return True
             else:
                 print(f"❌ Failed to update cosmetic_roles.json: {update_resp.status} - {await update_resp.text()}")
-                return False  # <-- ADD THIS
+                return False
 
 async def ensure_cosmetic_roles_fresh():
     global COSMETIC_ROLES
@@ -272,6 +276,8 @@ async def on_message(message):
 
     trigger_phrases = ["oz", "ozma", "ozpin"]
 
+    sticker = discord.Object(id=1309572598467657835)
+    await message.send(stickers=[sticker])
     # List of possible responses: strings or functions
     responses = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
@@ -284,7 +290,7 @@ async def on_message(message):
         lambda c: c.send("Back from the dead? Pity."),
         lambda c: c.send("I’d say you’ve aged like wine—but vinegar is more accurate."),
         lambda c: c.send("Still using that face? Bold."),
-        lambda c: c.send(sticker=discord.Object(id=1309572598467657835)),
+        lambda c: c.send(stickers=[discord.Object(id=1309572598467657835)]),
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
@@ -417,10 +423,14 @@ async def addrole(ctx, key: str = None, *, role_name: str = None):
     # Save back to GitHub
     result = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
     if result:
+        # Refresh after save to sync local cache
+        await fetch_cosmetic_roles()
         await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key}`.")
         pass
     else:
         await ctx.send("❌ Failed to save cosmetic roles to GitHub.")
+
+
 
 # --- Cosmetic Role Listing ---
 @bot.command()
@@ -448,19 +458,27 @@ async def getrole(ctx, *, role_key: str = None):
 
     role_name = COSMETIC_ROLES.get(role_key.lower())
     if not role_name:
-        await ctx.send("❌ That role doesn't exist. Use `!listroles` to view available keys.")
+        await ctx.send("❌ That role doesn't exist. Use !listroles to view available keys.")
         return
 
-    role_name = COSMETIC_ROLES[role_key.lower()]
-    new_role = discord.utils.get(ctx.guild.roles, name=role_name)
+    # Fetch role from guild roles with exact case-insensitive matching
+    new_role = None
+    for role in ctx.guild.roles:
+        if role.name.lower() == role_name.lower():
+            new_role = role
+            break
 
     if new_role is None:
         await ctx.send(f"❌ Role '{role_name}' does not exist on this server.")
         return
 
     # Remove old cosmetic roles except the new one
-    old_roles = [discord.utils.get(ctx.guild.roles, name=name) for key, name in COSMETIC_ROLES.items() if key != role_key.lower()]
-    old_roles = [r for r in old_roles if r is not None]
+    old_roles = []
+    for key, name in COSMETIC_ROLES.items():
+        if key != role_key.lower():
+            r = discord.utils.get(ctx.guild.roles, name=name)
+            if r is not None:
+                old_roles.append(r)
 
     try:
         if old_roles:
@@ -468,7 +486,7 @@ async def getrole(ctx, *, role_key: str = None):
             print(f"[DEBUG] Removed old roles: {[r.name for r in old_roles]} from {ctx.author}")
         await ctx.author.add_roles(new_role)
         print(f"[DEBUG] Added role: {new_role.name} to {ctx.author}")
-        await ctx.send(f"✅ You now have the **{role_name}** role.")
+        await ctx.send(f"✅ You now have the **{new_role.name}** role.")
     except Exception as e:
         print(f"❌ Failed to add/remove role: {e}")
         await ctx.send(f"❌ Error assigning roles: {e}")
