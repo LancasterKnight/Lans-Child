@@ -54,12 +54,21 @@ current_weekly_prompt = None
 # --- ROle Utilities ---
 # --- Fetch Roles  ---
 async def fetch_cosmetic_roles():
-    async with aiohttp.ClientSession() as session:
-        async with session.get(COSMETIC_ROLES_URL) as resp:
-            if resp.status == 200:
-                return await resp.json()
-            print(f"❌ Failed to fetch cosmetic roles: {resp.status}")
-            return {}
+    headers = {"Authorization": f"Bearer {GITHUB_TOKEN}"}
+    try:
+        response = requests.get(COSMETIC_ROLES_URL, headers=headers)
+        print(f"[DEBUG] Fetching cosmetic roles from GitHub, status: {response.status_code}")
+        if response.status_code == 200:
+            content = response.json()["content"]
+            decoded = base64.b64decode(content).decode("utf-8")
+            data = json.loads(decoded)
+            print(f"[DEBUG] Decoded cosmetic roles: {data}")
+            return data
+        else:
+            print(f"[ERROR] Failed to fetch roles: {response.text}")
+    except Exception as e:
+        print(f"[EXCEPTION] fetch_cosmetic_roles failed: {e}")
+    return {}
 # --- Save Roles  ---            
 async def save_cosmetic_roles_to_github(data: dict):
     headers = {
@@ -215,7 +224,7 @@ async def on_ready():
     print("I am here, father.")
 
     COSMETIC_ROLES = await fetch_cosmetic_roles()
-    print(f"🎨 Cosmetic roles loaded: {COSMETIC_ROLES}")
+    print(f"[DEBUG] COSMETIC_ROLES loaded: {COSMETIC_ROLES}")
     
     # Fetch the current prompt from GitHub on startup
     current_prompt_data = await fetch_current_prompt()
@@ -349,6 +358,11 @@ async def gif(ctx, *, search: str):
 # --- Role command ---
 @bot.command()
 async def role(ctx, *, role_key: str = None):
+    print(f"[DEBUG] Received !role with key: {role_key}")
+    if not COSMETIC_ROLES:
+        print("[DEBUG] COSMETIC_ROLES is empty or None")
+        await ctx.send("⚠️ No cosmetic roles configured.")
+        return
     if role_key is None:
         await ctx.send("❓ Please specify a role, like `!role red`, or use `!role remove` to clear it.")
         return
