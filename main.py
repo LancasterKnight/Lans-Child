@@ -125,8 +125,6 @@ async def should_run_weekly_prompt():
                             now_local = datetime.now(LOCAL_TZ)
                             now_utc = now_local.astimezone(timezone.utc)
                             delta = now_utc - last_time
-
-                            delta = now_utc - last_time
                             print(f"⏱️ It's been {delta.days} days since last prompt.")
                             return delta > timedelta(days=7)
             print("⚠️ No timestamp found. Resetting prompt.")
@@ -137,7 +135,7 @@ async def fetch_prompts():
         async with session.get(GITHUB_PROMPTS_URL) as resp:
             if resp.status == 200:
                 text = await resp.text()
-                return [line.strip() for line in text.splitlines() if line.strip()]
+                return [line for line in (l.strip() for l in text.splitlines()) if line]
             print(f"❌ Failed to fetch prompts: {resp.status}")
             return []
 
@@ -212,7 +210,12 @@ async def weekly_prompt_run_once():
 # --- Events ---
 @bot.event
 async def on_ready():
+    global COSMETIC_ROLES
+    
     print("I am here, father.")
+
+    COSMETIC_ROLES = await fetch_cosmetic_roles()
+    print(f"🎨 Cosmetic roles loaded: {COSMETIC_ROLES}")
     
     # Fetch the current prompt from GitHub on startup
     current_prompt_data = await fetch_current_prompt()
@@ -318,7 +321,6 @@ async def forceprompt(ctx):
 
 @bot.command()
 async def prompt(ctx):
-    global current_weekly_prompt
     if current_weekly_prompt is None:
         await ctx.reply("⚠️ No weekly prompt has been posted yet.", mention_author=False)
     else:
@@ -392,10 +394,29 @@ async def role(ctx, *, role_key: str = None):
 @commands.has_permissions(administrator=True)
 async def addcosmetic(ctx, key: str, *, role_name: str):
     key = key.lower()
+    # Check if the role exists on the server
+    existing_role = discord.utils.get(ctx.guild.roles, name=role_name)
+    if not existing_role:
+        await ctx.send(f"❌ No role named **{role_name}** exists on this server.")
+        return
+        
     roles = await fetch_cosmetic_roles()
     roles[key] = role_name
     await save_cosmetic_roles_to_github(roles)
+    # Refresh local state
+    global COSMETIC_ROLES
+    COSMETIC_ROLES = await fetch_cosmetic_roles()
+
     await ctx.send(f"✅ Added cosmetic role: `{key}` → **{role_name}**.")
+
+# --- list cosmetics ---
+@bot.command()
+async def listcosmetics(ctx):
+    if not COSMETIC_ROLES:
+        await ctx.send("⚠️ No cosmetic roles available.")
+        return
+    msg = "\n".join(f"`{k}` → **{v}**" for k, v in COSMETIC_ROLES.items())
+    await ctx.send(f"🎨 Available cosmetic roles:\n{msg}")
 
 # --- Keep-Alive Counter ---
 @tasks.loop(minutes=1)
