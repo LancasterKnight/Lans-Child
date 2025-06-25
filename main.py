@@ -73,10 +73,16 @@ async def fetch_cosmetic_roles():
     async with aiohttp.ClientSession() as session:
         async with session.get(COSMETIC_ROLES_URL, headers=headers) as resp:
             if resp.status == 200:
-                data = await resp.json()
-                decoded = base64.b64decode(data['content']).decode('utf-8')
-    COSMETIC_ROLES = json.loads(decoded)
-    return COSMETIC_ROLES
+                text = await resp.text()
+                try:
+                    COSMETIC_ROLES = json.loads(text)
+                    return COSMETIC_ROLES
+                except json.JSONDecodeError as e:
+                    logger.error(f"Failed to parse JSON: {e}")
+                    return {}
+            else:
+                logger.error(f"Failed to fetch cosmetic roles: {resp.status}")
+                return {}
 
 async def save_cosmetic_roles_to_github(roles: dict) -> bool:
     content_b64 = base64.b64encode(json.dumps(roles, indent=2).encode()).decode()
@@ -203,7 +209,7 @@ async def weekly_prompt_run_once():
     if not channel:
         print("❌ Prompt channel not found.")
         return
-        
+
     now_utc = datetime.now(timezone.utc)
     unix_ts = int(now_utc.timestamp())
     embed = discord.Embed(
@@ -221,12 +227,12 @@ async def weekly_prompt_run_once():
 @bot.event
 async def on_ready():
     global COSMETIC_ROLES, current_weekly_prompt
-    
+
     print("I am here, father.")
 
     await fetch_cosmetic_roles()  # 🔁 Force GitHub fetch on startup
     print(f'Bot is ready. Roles loaded: {COSMETIC_ROLES}')
-    
+
     # Fetch the current prompt from GitHub on startup
     current_prompt_data = await fetch_current_prompt()
     if current_prompt_data:
@@ -234,7 +240,7 @@ async def on_ready():
             if line.startswith("Prompt:"):
                 current_weekly_prompt = line.replace("Prompt:", "").strip()
                 print(f"📌 Current weekly prompt loaded: {current_weekly_prompt}")
-    
+
     if not keep_alive_counter.is_running():
         keep_alive_counter.start()
     if not prompt_scheduler.is_running():
@@ -501,7 +507,7 @@ async def getrole(ctx, *, role_key: str = None):
     except Exception as e:
         print(f"❌ Failed to assign roles: {e}")
         await ctx.send(f"❌ Error assigning roles: {e}")
-    
+
 # --- Keep-Alive Counter ---
 @tasks.loop(minutes=1)
 async def keep_alive_counter():
