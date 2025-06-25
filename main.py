@@ -242,17 +242,25 @@ async def on_message(message):
 # --- Commands ---
 prompt_lock = asyncio.Lock()
 @bot.before_invoke
-async def ensure_prompt_loaded(ctx):
-    global current_weekly_prompt
+async def ensure_state_loaded(ctx):
+    global current_weekly_prompt, COSMETIC_ROLES
+
     async with prompt_lock:
+        # Prompt load
         if current_weekly_prompt is None:
-            print("🔄 Attempting to load current prompt before command...")
-            current_prompt_data = await fetch_current_prompt()
-            if current_prompt_data:
-                for line in current_prompt_data.splitlines():
+            print("🔄 Loading prompt from GitHub...")
+            prompt_data = await fetch_current_prompt()
+            if prompt_data:
+                for line in prompt_data.splitlines():
                     if line.startswith("Prompt:"):
                         current_weekly_prompt = line.replace("Prompt:", "").strip()
-                        print(f"✅ Prompt initialized during command call: {current_weekly_prompt}")
+                        print(f"✅ Prompt initialized: {current_weekly_prompt}")
+        
+        # Roles load
+        if not COSMETIC_ROLES:
+            print("🎨 Loading cosmetic roles from GitHub...")
+            COSMETIC_ROLES = await fetch_cosmetic_roles()
+            print(f"✅ Roles initialized: {COSMETIC_ROLES}")
 
 @bot.command()
 async def hello(ctx):
