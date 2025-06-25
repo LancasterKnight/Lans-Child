@@ -277,7 +277,7 @@ async def on_message(message):
     trigger_phrases = ["oz", "ozma", "ozpin"]
 
     sticker = discord.Object(id=1309572598467657835)
-    await message.send(stickers=[sticker])
+    await message.channel.send(stickers=[sticker])
     # List of possible responses: strings or functions
     responses = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
@@ -294,8 +294,8 @@ async def on_message(message):
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        sticker = discord.Object(id=1309572598467657835)
-        await message.channel.send(stickers=[sticker])
+#        sticker = discord.Object(id=1309572598467657835)
+#        await message.channel.send(stickers=[sticker])
         response = random.choice(responses)
         await response(message.channel)
 
