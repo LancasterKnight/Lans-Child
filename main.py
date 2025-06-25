@@ -435,4 +435,19 @@ async def keep_alive_counter():
     except Exception as e:
         print(f"❌ Failed to send/edit keep-alive message: {e}")
 
+#--- debugging ---
+@bot.command()
+async def testrole(ctx):
+    role = discord.utils.get(ctx.guild.roles, name="Red Role")
+    print(f"[DEBUG] Found role: {role}")
+    if role:
+        await ctx.author.add_roles(role)
+        await ctx.send("✅ Role added manually.")
+    else:
+        await ctx.send("❌ Couldn't find role.")
+
+
+
+
+
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
