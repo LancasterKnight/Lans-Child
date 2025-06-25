@@ -240,27 +240,30 @@ async def on_message(message):
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
 # --- Commands ---
-prompt_lock = asyncio.Lock()
 @bot.before_invoke
 async def ensure_state_loaded(ctx):
     global current_weekly_prompt, COSMETIC_ROLES
 
-    async with prompt_lock:
-        # Prompt load
-        if current_weekly_prompt is None:
-            print("🔄 Loading prompt from GitHub...")
-            prompt_data = await fetch_current_prompt()
-            if prompt_data:
-                for line in prompt_data.splitlines():
-                    if line.startswith("Prompt:"):
-                        current_weekly_prompt = line.replace("Prompt:", "").strip()
-                        print(f"✅ Prompt initialized: {current_weekly_prompt}")
-        
-        # Roles load
-        if not COSMETIC_ROLES:
-            print("🎨 Loading cosmetic roles from GitHub...")
-            COSMETIC_ROLES = await fetch_cosmetic_roles()
-            print(f"✅ Roles initialized: {COSMETIC_ROLES}")
+    try:
+        async with prompt_lock:
+            # Load prompt if needed
+            if current_weekly_prompt is None:
+                print("🔄 Loading prompt from GitHub...")
+                prompt_data = await fetch_current_prompt()
+                if prompt_data:
+                    for line in prompt_data.splitlines():
+                        if line.startswith("Prompt:"):
+                            current_weekly_prompt = line.replace("Prompt:", "").strip()
+                            print(f"✅ Prompt initialized: {current_weekly_prompt}")
+
+            # Load cosmetic roles if needed
+            if not COSMETIC_ROLES:
+                print("🎨 Loading cosmetic roles from GitHub...")
+                COSMETIC_ROLES = await fetch_cosmetic_roles()
+                print(f"✅ Roles initialized: {COSMETIC_ROLES}")
+
+    except Exception as e:
+        print(f"❌ Error in before_invoke: {e}")
 
 @bot.command()
 async def hello(ctx):
@@ -431,6 +434,12 @@ async def keep_alive_counter():
             await counter_message.edit(content=f"⏱️ Keep-alive counter: `{counter}` minutes")
     except Exception as e:
         print(f"❌ Failed to send/edit keep-alive message: {e}")
+
+# --- test command ---
+@bot.command()
+async def test(ctx):
+    print("✅ Command test triggered")
+    await ctx.send("Test successful.")
 
 #--- debugging ---
 @bot.command()
