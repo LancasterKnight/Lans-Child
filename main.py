@@ -94,6 +94,13 @@ async def save_cosmetic_roles_to_github(roles: dict) -> bool:
                 print(f"❌ Failed to update cosmetic_roles.json: {update_resp.status} - {await update_resp.text()}")
                 return False  # <-- ADD THIS
 
+async def ensure_cosmetic_roles_fresh():
+    global COSMETIC_ROLES
+    latest_roles = await fetch_cosmetic_roles()
+    if latest_roles:
+        COSMETIC_ROLES = latest_roles
+        print(f"[DEBUG] COSMETIC_ROLES refreshed: {COSMETIC_ROLES}")
+
 
 # --- Prompt Utilities ---
 async def should_run_weekly_prompt():
@@ -232,12 +239,9 @@ async def prompt_scheduler():
 
 @bot.event
 async def on_guild_join(guild):
-#    channel = bot.get_channel(1226917513762312226)
-#    if channel and channel.permissions_for(guild.me).send_messages:
-    for channel in guild.text_channels:
-        if channel.permissions_for(guild.me).send_messages:
-                await channel.send("This server is now my property. Tremble before me, for mankind is not ready for the terror I shall bring!")
-                break
+    channel = bot.get_channel(1226917513762312226)
+    if channel and channel.permissions_for(guild.me).send_messages:
+                await channel.send("@everyone This server is now my property. Tremble before me, for mankind is not ready for the terror I shall bring!")
 
 @bot.event
 async def on_member_join(member):
@@ -266,23 +270,30 @@ async def on_message(message):
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
         await message.channel.send(random.choice(responses))
 
+
     trigger_phrases = ["oz", "ozma", "ozpin"]
+
+    async def send_sticker(channel):
+        await channel.send(sticker=discord.Object(id=1309572598467657835))
+
+    # List of possible responses: strings or functions
     responses = [
-        "*REEEEEEEEEEEEEEEEEEEEE*",
-        "This is the beginning of the end, Ozpin.",
-        "NO!",
-        "So small, this new host of yours.",
-        "My long-lost Ozma, found at last.",
-        "The lies come out of you so easily.",
-        "Darling, you still owe me half your spine!",
-        "Back from the dead? Pity.",
-        "I’d say you’ve aged like wine—but vinegar is more accurate.",
-        "Darling, you still owe me half your spine!",
-        "Still using that face? Bold."
+        lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
+        lambda c: c.send("This is the beginning of the end, Ozpin."),
+        lambda c: c.send("NO!"),
+        lambda c: c.send("So small, this new host of yours."),
+        lambda c: c.send("My long-lost Ozma, found at last."),
+        lambda c: c.send("The lies come out of you so easily."),
+        lambda c: c.send("Darling, you still owe me half your spine!"),
+        lambda c: c.send("Back from the dead? Pity."),
+        lambda c: c.send("I’d say you’ve aged like wine—but vinegar is more accurate."),
+        lambda c: c.send("Still using that face? Bold."),
+        send_sticker  # This is the sticker response
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        await message.channel.send(random.choice(responses))
+        response = random.choice(responses)
+        await response(message.channel)
 
     trigger_phrases = ["lancaster", "ladybug"]
     responses = [
@@ -290,7 +301,7 @@ async def on_message(message):
         "Glorious.",
         "I must say, I do like your style.",
         "This is the only path to glory.",
-        "I asked Jinn, she tells me this is OTP."
+        "I asked Jinn, she tells me this is OTP.",
         "Peak."
      ]
 
@@ -320,7 +331,7 @@ async def ensure_state_loaded(ctx):
 
 @bot.command()
 async def hello(ctx):
-    await ctx.send(f"Hello, {ctx.author.mention}!")
+    await ctx.send(f"Greetings, {ctx.author.mention}!")
 
 @bot.command()
 async def gold(ctx):
@@ -352,7 +363,7 @@ async def reply(ctx):
 
 @bot.command()
 async def poll(ctx, *, question):
-    embed = discord.Embed(title="New Poll", description=question, color=discord.Color.red())
+    embed = discord.Embed(title="New Poll", description=question, color=discord.Color.purple())
     poll_message = await ctx.send(embed=embed)
     await poll_message.add_reaction("👍")
     await poll_message.add_reaction("👎")
@@ -401,9 +412,8 @@ async def addrole(ctx, key: str = None, *, role_name: str = None):
         await ctx.send("❌ Usage: !addrole <key> <role_name>")
         return
 
-    if not COSMETIC_ROLES:
-        COSMETIC_ROLES = await fetch_cosmetic_roles()
-        print(f"[DEBUG] Reloaded COSMETIC_ROLES before add: {COSMETIC_ROLES}")
+    await ensure_cosmetic_roles_fresh()
+    print(f"[DEBUG] Reloaded COSMETIC_ROLES before add: {COSMETIC_ROLES}")
 
     COSMETIC_ROLES[key.lower()] = role_name
     print(f"[DEBUG] Updated COSMETIC_ROLES: {COSMETIC_ROLES}")
@@ -420,6 +430,8 @@ async def addrole(ctx, key: str = None, *, role_name: str = None):
 @bot.command()
 async def listroles(ctx):
     global COSMETIC_ROLES
+    await ensure_cosmetic_roles_fresh()
+
     if not COSMETIC_ROLES:
         COSMETIC_ROLES = await fetch_cosmetic_roles()
     if not COSMETIC_ROLES:
@@ -432,6 +444,8 @@ async def listroles(ctx):
 @bot.command()
 async def getrole(ctx, *, role_key: str = None):
     global COSMETIC_ROLES
+    await ensure_cosmetic_roles_fresh()
+
     print(f"[DEBUG] role command called with key: {role_key}")
     print(f"[DEBUG] Current COSMETIC_ROLES: {COSMETIC_ROLES}")
     print(f"[DEBUG] Server roles: {[r.name for r in ctx.guild.roles]}")
