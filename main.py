@@ -294,6 +294,8 @@ async def on_message(message):
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
+        sticker = discord.Object(id=1309572598467657835)
+        await message.channel.send(stickers=[sticker])
         response = random.choice(responses)
         await response(message.channel)
 
@@ -403,50 +405,43 @@ async def gif(ctx, *, search: str):
             gif_url = random.choice(results)['images']['original']['url']
             await ctx.reply(gif_url)
 
-# --- Add Cosmetic Command ---
+# --- Add Cosmetic Role Command ---
 @bot.command()
 @commands.has_permissions(administrator=True)
 async def addrole(ctx, key: str = None, *, role_name: str = None):
     global COSMETIC_ROLES
-    print(f"[DEBUG] addrole called with key: {key}, role_name: {role_name}")
 
     if not key or not role_name:
         await ctx.send("❌ Usage: !addrole <key> <role_name>")
         return
 
     await ensure_cosmetic_roles_fresh()
-    print(f"[DEBUG] Reloaded COSMETIC_ROLES before add: {COSMETIC_ROLES}")
 
-    COSMETIC_ROLES[key.lower()] = role_name
-    print(f"[DEBUG] Updated COSMETIC_ROLES: {COSMETIC_ROLES}")
+    key_lower = key.lower()
+    COSMETIC_ROLES[key_lower] = role_name
+    print(f"[DEBUG] Adding/updating role: {key_lower} → {role_name}")
 
-    # Save back to GitHub
-    result = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
-    if result:
-        # Refresh after save to sync local cache
-        await fetch_cosmetic_roles()
-        await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key}`.")
-        pass
+    success = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
+    if success:
+        await fetch_cosmetic_roles()  # Refresh local cache
+        await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key_lower}`.")
     else:
         await ctx.send("❌ Failed to save cosmetic roles to GitHub.")
 
-
-
-# --- Cosmetic Role Listing ---
+# --- List Cosmetic Roles Command ---
 @bot.command()
 async def listroles(ctx):
     global COSMETIC_ROLES
     await ensure_cosmetic_roles_fresh()
 
     if not COSMETIC_ROLES:
-        await fetch_cosmetic_roles()
-    if not COSMETIC_ROLES:
         await ctx.send("⚠️ No cosmetic roles configured.")
         return
+
     msg = "\n".join(f"`{k}` → **{v}**" for k, v in COSMETIC_ROLES.items())
     await ctx.send(f"🎨 Available cosmetic roles:\n{msg}")
 
-# --- Role Command ---
+# --- Get Cosmetic Role Command ---
 @bot.command()
 async def getrole(ctx, *, role_key: str = None):
     global COSMETIC_ROLES
@@ -456,39 +451,35 @@ async def getrole(ctx, *, role_key: str = None):
         await ctx.send("❌ Usage: !getrole <role_key>")
         return
 
-    role_name = COSMETIC_ROLES.get(role_key.lower())
+    key_lower = role_key.lower()
+    role_name = COSMETIC_ROLES.get(key_lower)
     if not role_name:
         await ctx.send("❌ That role doesn't exist. Use !listroles to view available keys.")
         return
 
-    # Fetch role from guild roles with exact case-insensitive matching
-    new_role = None
-    for role in ctx.guild.roles:
-        if role.name.lower() == role_name.lower():
-            new_role = role
-            break
-
+    # Find the actual role object on this guild (case-insensitive)
+    new_role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
     if new_role is None:
         await ctx.send(f"❌ Role '{role_name}' does not exist on this server.")
         return
 
     # Remove old cosmetic roles except the new one
     old_roles = []
-    for key, name in COSMETIC_ROLES.items():
-        if key != role_key.lower():
-            r = discord.utils.get(ctx.guild.roles, name=name)
-            if r is not None:
-                old_roles.append(r)
+    for k, v in COSMETIC_ROLES.items():
+        if k != key_lower:
+            role_obj = discord.utils.find(lambda r: r.name.lower() == v.lower(), ctx.guild.roles)
+            if role_obj:
+                old_roles.append(role_obj)
 
     try:
         if old_roles:
             await ctx.author.remove_roles(*old_roles)
-            print(f"[DEBUG] Removed old roles: {[r.name for r in old_roles]} from {ctx.author}")
+            print(f"[DEBUG] Removed old cosmetic roles {[r.name for r in old_roles]} from {ctx.author}")
         await ctx.author.add_roles(new_role)
-        print(f"[DEBUG] Added role: {new_role.name} to {ctx.author}")
+        print(f"[DEBUG] Added role {new_role.name} to {ctx.author}")
         await ctx.send(f"✅ You now have the **{new_role.name}** role.")
     except Exception as e:
-        print(f"❌ Failed to add/remove role: {e}")
+        print(f"❌ Failed to assign roles: {e}")
         await ctx.send(f"❌ Error assigning roles: {e}")
     
 # --- Keep-Alive Counter ---
