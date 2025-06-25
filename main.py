@@ -24,20 +24,16 @@ COUNTER_CHANNEL_ID = int(os.getenv("COUNTER_CHANNEL_ID"))
 GITHUB_PROMPTS_URL = os.getenv("GITHUB_PROMPTS_URL")
 CURRENT_PROMPT_URL = os.getenv("CURRENT_PROMPT_URL")
 CURRENT_PROMPT_UPLOAD_URL = os.getenv("CURRENT_PROMPT_UPLOAD_URL")
+COSMETIC_ROLES_URL = os.getenv("COSMETIC_ROLES_URL")  # RAW URL for fetching
+COSMETIC_ROLES_UPLOAD_URL = os.getenv("COSMETIC_ROLES_UPLOAD_URL")  # GitHub API URL for editing
+
 
 app = Flask(__name__)
-
-COSMETIC_ROLES = {
-    "red": "Red",
-    "blue": "Blue",
-    "green": "Green",
-    "purple": "Purple",
-}
 
 @app.route('/')
 def home():
     print("✅ Ping received to keep alive.")
-    return "Bot is still running!"
+    return "I am still alive, father!"
 
 def run_web():
     port = int(os.environ.get("PORT", 5000))
@@ -54,6 +50,42 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 counter = 0
 counter_message = None
 current_weekly_prompt = None
+
+# --- ROle Utilities ---
+# --- Fetch Roles  ---
+async def fetch_cosmetic_roles():
+    async with aiohttp.ClientSession() as session:
+        async with session.get(COSMETIC_ROLES_URL) as resp:
+            if resp.status == 200:
+                return await resp.json()
+            print(f"❌ Failed to fetch cosmetic roles: {resp.status}")
+            return {}
+# --- Save Roles  ---            
+async def save_cosmetic_roles_to_github(data: dict):
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+
+    content_b64 = base64.b64encode(json.dumps(data, indent=2).encode()).decode()
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(COSMETIC_ROLES_UPLOAD_URL, headers=headers) as resp:
+            sha = (await resp.json()).get("sha") if resp.status == 200 else None
+
+        payload = {
+            "message": "Update cosmetic_roles.json",
+            "content": content_b64,
+            "branch": "main",
+        }
+        if sha:
+            payload["sha"] = sha
+
+        async with session.put(COSMETIC_ROLES_UPLOAD_URL, headers=headers, data=json.dumps(payload)) as update_resp:
+            if update_resp.status not in (200, 201):
+                print(f"❌ Failed to update cosmetic_roles.json: {update_resp.status} - {await update_resp.text()}")
+
+
 # --- Role Utilities ---
 async def assign_cosmetic_role(member, role_name):
     guild = member.guild
@@ -238,7 +270,7 @@ async def ensure_prompt_loaded(ctx):
                     if line.startswith("Prompt:"):
                         current_weekly_prompt = line.replace("Prompt:", "").strip()
                         print(f"✅ Prompt initialized during command call: {current_weekly_prompt}")
-# --- Commands ---
+
 @bot.command()
 async def hello(ctx):
     await ctx.send(f"Hello, {ctx.author.mention}!")
@@ -354,6 +386,16 @@ async def role(ctx, *, role_key: str = None):
 
     await ctx.author.add_roles(new_role)
     await ctx.send(f"✅ You now have the **{new_role_name}** role.")
+
+# --- Create New Role ---
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def addcosmetic(ctx, key: str, *, role_name: str):
+    key = key.lower()
+    roles = await fetch_cosmetic_roles()
+    roles[key] = role_name
+    await save_cosmetic_roles_to_github(roles)
+    await ctx.send(f"✅ Added cosmetic role: `{key}` → **{role_name}**.")
 
 # --- Keep-Alive Counter ---
 @tasks.loop(minutes=1)
