@@ -276,8 +276,8 @@ async def on_message(message):
 
     trigger_phrases = ["oz", "ozma", "ozpin"]
 
-    sticker = discord.Object(id=1309572598467657835)
-    await message.channel.send(stickers=[sticker])
+#    sticker = discord.Object(id=1309572598467657835)
+#    await message.channel.send(stickers=[sticker])
     # List of possible responses: strings or functions
     responses = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
@@ -290,14 +290,25 @@ async def on_message(message):
         lambda c: c.send("Back from the dead? Pity."),
         lambda c: c.send("I’d say you’ve aged like wine—but vinegar is more accurate."),
         lambda c: c.send("Still using that face? Bold."),
-        lambda c: c.send(stickers=[discord.Object(id=1309572598467657835)]),
+        #lambda c: c.send(stickers=[discord.Object(id=1309572598467657835)]),
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
-#        sticker = discord.Object(id=1309572598467657835)
-#        await message.channel.send(stickers=[sticker])
-        response = random.choice(responses)
-        await response(message.channel)
+        # Number of text responses
+        num_responses = len(responses)
+
+        # Total options = text responses + 1 sticker
+        total_options = num_responses + 1
+
+        choice_index = random.randint(0, total_options - 1)  # 0 to N inclusive
+
+        if choice_index == 0:
+            # Send sticker
+            sticker = discord.Object(id=1309572598467657835)
+            await message.channel.send(stickers=[sticker])
+        else:
+            # Send one of the text responses (choice_index-1 because 0 is sticker)
+            await responses[choice_index - 1](message.channel)
 
     trigger_phrases = ["lancaster", "ladybug"]
     responses = [
