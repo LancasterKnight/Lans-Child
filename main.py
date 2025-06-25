@@ -231,22 +231,58 @@ async def prompt_scheduler():
         print("⏳ Not time yet for a new prompt.")
 
 @bot.event
+async def on_guild_join(guild):
+#    channel = bot.get_channel(1226917513762312226)
+#    if channel and channel.permissions_for(guild.me).send_messages:
+    for channel in guild.text_channels:
+        if channel.permissions_for(guild.me).send_messages:
+                await channel.send("This server is now my property. Tremble before me, for mankind is not ready for the terror I shall bring!")
+                break
+
+@bot.event
 async def on_member_join(member):
-    await member.send(f"Welcome to the server, {member.name}!")
+    await member.send(f"Ah, another minion! Welcome to the fold, {member.name}")
 
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
         return
-    if "whiterose" in message.content.lower():
-        await message.delete()
-        await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
+#    if "whiterose" in message.content.lower():
+#        await message.delete()
+#        await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
 
-    if "28" in message.content.lower():
-        await message.reply("<@394034047258460162> they said the number! Nerd.")
+#    if "28" in message.content.lower():
+#        await message.reply("<@394034047258460162> they said the number! Nerd.")
 
-    if "milk & cereal" in message.content.lower():
-        await message.reply("Delusional. smh")
+    trigger_phrases = ["milk and cereal", "m&c", "milk & cereal", "whiterose", "wr"]
+    responses = [
+        "Delusional. smh",
+        "That ship won't ever set sail.",
+        "Arkos has higher odds than *that*.",
+        "Unbelievable choice.",
+        "I'm judging you. Silently. Aggressively."
+    ]
+
+    if any(phrase in message.content.lower() for phrase in trigger_phrases):
+        await message.reply(random.choice(responses))
+
+    trigger_phrases = ["oz", "ozma", "ozpin"]
+    responses = [
+        "*REEEEEEEEEEEEEEEEEEEEE*",
+        "This it the beginning of the end, Ozpin.",
+        "NO!",
+        "So small, this new host of yours.",
+        "My long-lost Ozma, found at last."
+        "The lies come out of you so easily."
+        "Darling, you still owe me half your spine!"
+        "Back from the dead? Pity."
+        "I’d say you’ve aged like wine—but vinegar is more accurate."
+        "Darling, you still owe me half your spine!"
+        "Still using that face? Bold."
+    ]
+
+    if any(phrase in message.content.lower() for phrase in trigger_phrases):
+        await message.reply(random.choice(responses))
 
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
@@ -343,12 +379,12 @@ async def gif(ctx, *, search: str):
 # --- Add Cosmetic Command ---
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def addcosmetic(ctx, key: str = None, *, role_name: str = None):
+async def addrole(ctx, key: str = None, *, role_name: str = None):
     global COSMETIC_ROLES
-    print(f"[DEBUG] addcosmetic called with key: {key}, role_name: {role_name}")
+    print(f"[DEBUG] addrole called with key: {key}, role_name: {role_name}")
 
     if not key or not role_name:
-        await ctx.send("❌ Usage: !addcosmetic <key> <role_name>")
+        await ctx.send("❌ Usage: !addrole <key> <role_name>")
         return
 
     if not COSMETIC_ROLES:
@@ -357,7 +393,6 @@ async def addcosmetic(ctx, key: str = None, *, role_name: str = None):
 
     COSMETIC_ROLES[key.lower()] = role_name
     print(f"[DEBUG] Updated COSMETIC_ROLES: {COSMETIC_ROLES}")
-    
 
     # Save back to GitHub
     result = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
@@ -369,7 +404,7 @@ async def addcosmetic(ctx, key: str = None, *, role_name: str = None):
 
 # --- Cosmetic Role Listing ---
 @bot.command()
-async def listcosmetics(ctx):
+async def listroles(ctx):
     global COSMETIC_ROLES
     if not COSMETIC_ROLES:
         COSMETIC_ROLES = await fetch_cosmetic_roles()
