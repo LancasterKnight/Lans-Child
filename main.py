@@ -52,25 +52,26 @@ counter_message = None
 current_weekly_prompt = None
 COSMETIC_ROLES = {}
 
+headers = {
+    "Authorization": f"token {GITHUB_TOKEN}",
+    "Accept": "application/vnd.github.v3+json"
+}
+
 # --- Cosmetic Role Utilities ---
 async def fetch_cosmetic_roles():
+    global COSMETIC_ROLES
+
     async with aiohttp.ClientSession() as session:
-        async with session.get(COSMETIC_ROLES_URL) as resp:
+        async with session.get(COSMETIC_ROLES_URL, headers=headers) as resp:
             if resp.status == 200:
-                try:
-                    return await resp.json()
-                except:
-                    text = await resp.text()
-                    print(f"⚠️ Could not parse JSON. Got: {text[:100]}")
-                    return {}
-            print(f"❌ Failed to fetch cosmetic roles: {resp.status}")
-            return {}
+                data = await resp.json()
+                decoded = base64.b64decode(data['content']).decode('utf-8')
+                COSMETIC_ROLES = json.loads(decoded)
+                print("[INFO] Cosmetic roles loaded:", COSMETIC_ROLES)
+            else:
+                print(f"[ERROR] Failed to load cosmetic roles. Status: {resp.status}")
 
 async def save_cosmetic_roles_to_github(roles: dict) -> bool:
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
 
     content_b64 = base64.b64encode(json.dumps(roles, indent=2).encode()).decode()
 
@@ -104,7 +105,7 @@ async def ensure_cosmetic_roles_fresh():
 
 # --- Prompt Utilities ---
 async def should_run_weekly_prompt():
-    headers = {
+    request_headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json"
     }
@@ -138,7 +139,7 @@ async def fetch_prompts():
             return []
 
 async def fetch_current_prompt():
-    headers = {
+    request_headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json"
     }
@@ -212,8 +213,8 @@ async def on_ready():
     
     print("I am here, father.")
 
-    COSMETIC_ROLES = await fetch_cosmetic_roles()
-    print(f"[DEBUG] COSMETIC_ROLES loaded: {COSMETIC_ROLES}")
+    await fetch_cosmetic_roles()  # 🔁 Force GitHub fetch on startup
+    print(f'Bot is ready. Roles loaded: {COSMETIC_ROLES}')
     
     # Fetch the current prompt from GitHub on startup
     current_prompt_data = await fetch_current_prompt()
@@ -273,9 +274,6 @@ async def on_message(message):
 
     trigger_phrases = ["oz", "ozma", "ozpin"]
 
-    async def send_sticker(channel):
-        await channel.send(sticker=discord.Object(id=1309572598467657835))
-
     # List of possible responses: strings or functions
     responses = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
@@ -288,7 +286,7 @@ async def on_message(message):
         lambda c: c.send("Back from the dead? Pity."),
         lambda c: c.send("I’d say you’ve aged like wine—but vinegar is more accurate."),
         lambda c: c.send("Still using that face? Bold."),
-        send_sticker  # This is the sticker response
+        lambda c: c.send(sticker=discord.Object(id=1309572598467657835))
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
@@ -313,7 +311,7 @@ async def on_message(message):
 
 # --- Commands ---
 @bot.before_invoke
-async def ensure_state_loaded(ctx):
+async def ensure_state_loaded(_):
     global current_weekly_prompt, COSMETIC_ROLES
     try:
         if current_weekly_prompt is None:
