@@ -14,6 +14,7 @@ from flask import Flask
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
+logging.basicConfig(level=logging.DEBUG)
 LOCAL_TZ = ZoneInfo("Europe/Malta")
 load_dotenv()
 
