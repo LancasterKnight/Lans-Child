@@ -349,7 +349,7 @@ async def addcosmetic(ctx, key: str = None, *, role_name: str = None):
     print(f"[DEBUG] Updated COSMETIC_ROLES: {COSMETIC_ROLES}")
 
     # Save back to GitHub
-    result = await save_cosmetic_roles(COSMETIC_ROLES)
+    result = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
     if result:
         await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key}`.")
     else:
@@ -369,7 +369,7 @@ async def listcosmetics(ctx):
 
 # --- Role Command ---
 @bot.command()
-async def role(ctx, *, role_key: str = None):
+async def getrole(ctx, *, role_key: str = None):
     global COSMETIC_ROLES
     print(f"[DEBUG] role command called with key: {role_key}")
     print(f"[DEBUG] Current COSMETIC_ROLES: {COSMETIC_ROLES}")
