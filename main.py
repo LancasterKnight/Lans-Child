@@ -66,10 +66,8 @@ async def fetch_cosmetic_roles():
             if resp.status == 200:
                 data = await resp.json()
                 decoded = base64.b64decode(data['content']).decode('utf-8')
-                COSMETIC_ROLES = json.loads(decoded)
-                print("[INFO] Cosmetic roles loaded:", COSMETIC_ROLES)
-            else:
-                print(f"[ERROR] Failed to load cosmetic roles. Status: {resp.status}")
+    COSMETIC_ROLES = json.loads(decoded)
+    return COSMETIC_ROLES
 
 async def save_cosmetic_roles_to_github(roles: dict) -> bool:
 
@@ -286,7 +284,7 @@ async def on_message(message):
         lambda c: c.send("Back from the dead? Pity."),
         lambda c: c.send("I’d say you’ve aged like wine—but vinegar is more accurate."),
         lambda c: c.send("Still using that face? Bold."),
-        lambda c: c.send(sticker=discord.Object(id=1309572598467657835))
+        lambda c: c.send(sticker=discord.Object(id=1309572598467657835)),
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
@@ -322,7 +320,7 @@ async def ensure_state_loaded(_):
                         current_weekly_prompt = line.replace("Prompt:", "").strip()
 
         if not COSMETIC_ROLES:
-            COSMETIC_ROLES = await fetch_cosmetic_roles()
+            await fetch_cosmetic_roles()
             print(f"[DEBUG] Loaded COSMETIC_ROLES in before_invoke: {COSMETIC_ROLES}")
     except Exception as e:
         print(f"❌ Error in before_invoke: {e}")
@@ -431,7 +429,7 @@ async def listroles(ctx):
     await ensure_cosmetic_roles_fresh()
 
     if not COSMETIC_ROLES:
-        COSMETIC_ROLES = await fetch_cosmetic_roles()
+        await fetch_cosmetic_roles()
     if not COSMETIC_ROLES:
         await ctx.send("⚠️ No cosmetic roles configured.")
         return
@@ -444,22 +442,13 @@ async def getrole(ctx, *, role_key: str = None):
     global COSMETIC_ROLES
     await ensure_cosmetic_roles_fresh()
 
-    print(f"[DEBUG] role command called with key: {role_key}")
-    print(f"[DEBUG] Current COSMETIC_ROLES: {COSMETIC_ROLES}")
-    print(f"[DEBUG] Server roles: {[r.name for r in ctx.guild.roles]}")
-
-    if not COSMETIC_ROLES:
-        COSMETIC_ROLES = await fetch_cosmetic_roles()
-        print(f"[DEBUG] Reloaded COSMETIC_ROLES: {COSMETIC_ROLES}")
-
-    if role_key is None:
-        available_roles = ", ".join(COSMETIC_ROLES.keys())
-        await ctx.send(f"❌ Please specify a role. Available roles: {available_roles}")
+    if not role_key:
+        await ctx.send("❌ Usage: !getrole <role_key>")
         return
 
-    if role_key.lower() not in COSMETIC_ROLES:
-        available_roles = ", ".join(COSMETIC_ROLES.keys())
-        await ctx.send(f"❌ Role `{role_key}` not found. Available roles: {available_roles}")
+    role_name = COSMETIC_ROLES.get(role_key.lower())
+    if not role_name:
+        await ctx.send("❌ That role doesn't exist. Use `!listroles` to view available keys.")
         return
 
     role_name = COSMETIC_ROLES[role_key.lower()]
