@@ -7,12 +7,21 @@ import asyncio
 import base64
 import json
 import discord
+import sys
 
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
 from flask import Flask
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+
+logger = logging.getLogger()
 
 prompt_lock = asyncio.Lock()
 LOCAL_TZ = ZoneInfo("Europe/Malta")
@@ -26,7 +35,7 @@ GITHUB_PROMPTS_URL = os.getenv("GITHUB_PROMPTS_URL")
 CURRENT_PROMPT_URL = os.getenv("CURRENT_PROMPT_URL")
 CURRENT_PROMPT_UPLOAD_URL = os.getenv("CURRENT_PROMPT_UPLOAD_URL")
 COSMETIC_ROLES_URL = os.getenv("COSMETIC_ROLES_URL")
-COSMETIC_ROLES_UPLOAD_URL = "https://api.github.com/repos/LancasterKnight/Lans-Child/contents/cosmetic_roles.json"
+COSMETIC_ROLES_UPLOAD_URL = os.getenv("COSMETIC_ROLES_UPLOAD_URL")
 
 app = Flask(__name__)
 
