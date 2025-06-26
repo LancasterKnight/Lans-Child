@@ -319,7 +319,7 @@ async def on_message(message):
 
         if choice_index == 0:
             # Send sticker
-            sticker = discord.Object(id=1387700241720938547)
+            sticker = discord.Object(id=1387704152729325648)
             await message.channel.send(stickers=[sticker])
         else:
             # Send one of the text responses (choice_index-1 because 0 is sticker)
