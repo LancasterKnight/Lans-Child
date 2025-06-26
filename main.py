@@ -269,12 +269,6 @@ async def on_member_join(member):
 async def on_message(message):
     if message.author == bot.user:
         return
-#    if "whiterose" in message.content.lower():
-#        await message.delete()
-#        await message.channel.send(f"{message.author.mention} Please don't blaspheme!")
-
-#    if "28" in message.content.lower():
-#        await message.reply("<@394034047258460162> they said the number! Nerd.")
 
     trigger_phrases = ["salem is a bitch"]
     responses = [
@@ -285,7 +279,16 @@ async def on_message(message):
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
         await message.channel.send(random.choice(responses))
 
+    
+    trigger_phrases = ["oven", "cooking device"]
+    responses = [
+        "HIDE YO CHILDREN!"
+    ]
 
+    if any(phrase in message.content.lower() for phrase in trigger_phrases):
+        await message.channel.send(random.choice(responses))
+
+    
     trigger_phrases = ["oz", "ozma", "ozpin"]
 
     responses = [
