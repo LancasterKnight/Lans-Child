@@ -1,8 +1,4 @@
 {
-  "yellow": "Yellow",
-  "red": "Red",
-  "blue": "Blue",
-  "green": "Green",
   "lancaster": "Lancaster",
   "cereal": "Milk and Cereal",
   "bumbleby": "Bumbleby",
@@ -28,6 +24,5 @@
   "gay": "Gay Pride",
   "ace": "Ace Pride",
   "trans": "Trans Pride",
-  "toxic": "Toxic Waste",
-  "purple": "Purple"
+  "toxic": "Toxic Waste"
 }
