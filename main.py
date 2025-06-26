@@ -278,11 +278,8 @@ async def on_message(message):
 
     trigger_phrases = ["milk and cereal", "m&c", "milk & cereal", "whiterose", "wr"]
     responses = [
-        "Delusional. smh",
-        "That ship won't ever set sail.",
-        "Arkos has higher odds than *that*.",
-        "Unbelievable choice.",
-        "I'm judging you. Silently. Aggressively."
+        "What the fuck did you just fucking say about me, you little bitch? I’ll have you know I graduated top of my class in Beacon, and I’ve been involved in numerous secret raids on Vacuo, and I have over 300 confirmed kills. I am trained in Grimm warfare and I’m the top huntress in the entire Beacon armed forces. You are nothing to me but just another target. I will wipe you the fuck out with precision the likes of which has never been seen before on Remnant, mark my fucking words. You think you can get away with saying that shit to me over the Continental Communications Network? Think again, fucker. As we speak I am contacting my secret network of huntsmen across Vale and your IP is being traced by Watts right now so you better prepare for the storm, maggot. The storm that wipes out the pathetic little thing you call your life. You’re fucking dead, kid. I can be anywhere, anytime, and I can kill you in over seven hundred ways, and that’s just with my bare hands. Not only am I extensively trained in unarmed combat, but I have access to the entire arsenal of Ruby Rose's weapon garage and I will use it to its full extent to wipe your miserable ass off the face of the continent, you little shit. If only you could have known what unholy retribution your little “clever” comment was about to bring down upon you, maybe you would have held your fucking tongue. But you couldn’t, you didn’t, and now you’re paying the price, you goddamn idiot. I will shit fury all over you and you will drown in it. You’re fucking dead, kiddo.",
+
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
@@ -291,9 +288,6 @@ async def on_message(message):
 
     trigger_phrases = ["oz", "ozma", "ozpin"]
 
-#    sticker = discord.Object(id=1309572598467657835)
-#    await message.channel.send(stickers=[sticker])
-    # List of possible responses: strings or functions
     responses = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
         lambda c: c.send("This is the beginning of the end, Ozpin."),
@@ -305,7 +299,6 @@ async def on_message(message):
         lambda c: c.send("Back from the dead? Pity."),
         lambda c: c.send("I’d say you’ve aged like wine—but vinegar is more accurate."),
         lambda c: c.send("Still using that face? Bold."),
-        #lambda c: c.send(stickers=[discord.Object(id=1309572598467657835)]),
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
@@ -319,24 +312,24 @@ async def on_message(message):
 
         if choice_index == 0:
             # Send sticker
-            sticker = discord.Object(id=1387704152729325648)
+            sticker = discord.Object(id=1387840712489308230)
             await message.channel.send(stickers=[sticker])
         else:
             # Send one of the text responses (choice_index-1 because 0 is sticker)
             await responses[choice_index - 1](message.channel)
 
-    trigger_phrases = ["lancaster", "ladybug"]
-    responses = [
-        "Objectively the best.",
-        "Glorious.",
-        "I must say, I do like your style.",
-        "This is the only path to glory.",
-        "I asked Jinn, she tells me this is OTP.",
-        "Peak."
-     ]
+#    trigger_phrases = ["lancaster", "ladybug", "nuts and dolts"]
+#    responses = [
+#        "Objectively the best.",
+#        "Glorious.",
+#        "I must say, I do like your style.",
+#        "This is the only path to glory.",
+#        "I asked Jinn, she tells me this is OTP.",
+#        "Peak."
+#     ]
 
-    if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        await message.channel.send(random.choice(responses))
+#    if any(phrase in message.content.lower() for phrase in trigger_phrases):
+#        await message.channel.send(random.choice(responses))
 
 
     await bot.process_commands(message)  # <- This line is required to make !commands work
@@ -507,6 +500,34 @@ async def getrole(ctx, *, role_key: str = None):
     except Exception as e:
         print(f"❌ Failed to assign roles: {e}")
         await ctx.send(f"❌ Error assigning roles: {e}")
+
+# Manual remove role
+@bot.command()
+async def remove(ctx, member: discord.Member = None):
+    member = member or ctx.author
+
+    await ensure_cosmetic_roles_fresh()  # Updates local cosmetic_roles.json from GitHub
+
+    with open("cosmetic_roles.json", "r") as f:
+        cosmetic_roles = json.load(f)
+
+    removed = []
+
+    for role_name in cosmetic_roles.values():
+        role = discord.utils.get(ctx.guild.roles, name=role_name)
+        if role and role in member.roles:
+            try:
+                await member.remove_roles(role)
+                removed.append(role.name)
+            except discord.Forbidden:
+                await ctx.send(f"❌ I don't have permission to remove `{role.name}`.")
+            except discord.HTTPException:
+                await ctx.send(f"⚠️ Could not remove `{role.name}` due to an API error.")
+
+    if removed:
+        await ctx.send(f"✅ Removed: {', '.join(removed)} from {member.display_name}.")
+    else:
+        await ctx.send(f"ℹ️ No cosmetic roles were removed from {member.display_name}.")
 
 # --- Keep-Alive Counter ---
 @tasks.loop(minutes=1)
