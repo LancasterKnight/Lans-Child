@@ -375,6 +375,7 @@ async def gold(ctx):
 
 @bot.command()
 async def dm(ctx, user_id: int, *, msg):
+    await ctx.message.delete()
     user = await bot.fetch_user(user_id)
     if user:
         try:
@@ -389,6 +390,7 @@ async def reply(ctx):
 
 @bot.command()
 async def poll(ctx, *, question):
+    await ctx.message.delete()
     embed = discord.Embed(title="New Poll", description=question, color=discord.Color.purple())
     poll_message = await ctx.send(embed=embed)
     await poll_message.add_reaction("👍")
@@ -434,6 +436,7 @@ async def addrole(ctx, key: str = None, *, role_name: str = None):
     global COSMETIC_ROLES
 
     if not key or not role_name:
+        await ctx.message.delete()
         await ctx.send("❌ Usage: !addrole <key> <role_name>")
         return
 
@@ -445,6 +448,7 @@ async def addrole(ctx, key: str = None, *, role_name: str = None):
 
     success = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
     if success:
+        await ctx.message.delete()
         await fetch_cosmetic_roles()  # Refresh local cache
         await ctx.send(f"✅ Added cosmetic role `{role_name}` with key `{key_lower}`.")
     else:
