@@ -503,7 +503,20 @@ async def getrole(ctx, *, role_name: str):
         except Exception as e:
             await ctx.send(f"❌ Failed to remove role: `{e}`")
     else:
+        # Remove all other cosmetic roles in a single API call
+        roles_to_remove = []
+        for other_role_name, other_role_value in COSMETIC_ROLES.items():
+            if other_role_name == role_key:
+                continue
+            other_role_obj = discord.utils.get(ctx.guild.roles, name=other_role_value)
+            if other_role_obj and other_role_obj in ctx.author.roles:
+                roles_to_remove.append(other_role_obj)
+
         try:
+            if roles_to_remove:
+                await ctx.author.remove_roles(*roles_to_remove)
+                print(f"🔻 Removed old cosmetic roles: {[r.name for r in roles_to_remove]}")
+
             await ctx.author.add_roles(role)
             await ctx.send(f"✅ You now have the **{role_name}** role.")
         except Exception as e:
