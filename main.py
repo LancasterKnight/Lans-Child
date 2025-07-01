@@ -490,7 +490,7 @@ async def getrole(ctx, *, role_name: str):
         return
 
     # Look for the actual role object in the server
-    role = discord.utils.find(lambda r: r.name.lower() == role_key, ctx.guild.roles)
+    role = discord.utils.get(ctx.guild.roles, name=role_data)
     if not role:
         await ctx.send("⚠️ That role exists in the list, but not on the server. Ask an admin to add it.")
         return
