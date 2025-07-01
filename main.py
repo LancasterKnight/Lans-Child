@@ -84,6 +84,13 @@ async def fetch_cosmetic_roles():
                 logger.error(f"Failed to fetch cosmetic roles: {resp.status}")
                 return {}
 
+
+@tasks.loop(minutes=60)
+async def refresh_roles_periodically():
+    print("🔄 Refreshing cosmetic roles from GitHub...")
+    await fetch_cosmetic_roles()
+    
+
 async def save_cosmetic_roles_to_github(roles: dict) -> bool:
     content_b64 = base64.b64encode(json.dumps(roles, indent=2).encode()).decode()
 
@@ -232,7 +239,9 @@ async def on_ready():
 
     await fetch_cosmetic_roles()  # 🔁 Force GitHub fetch on startup
     print(f'Bot is ready. Roles loaded: {COSMETIC_ROLES}')
-
+    
+    refresh_roles_periodically.start()
+    
     # Fetch the current prompt from GitHub on startup
     current_prompt_data = await fetch_current_prompt()
     if current_prompt_data:
@@ -469,44 +478,34 @@ async def listroles(ctx):
 
 # --- Get Cosmetic Role Command ---
 @bot.command()
-async def getrole(ctx, *, role_key: str = None):
-    global COSMETIC_ROLES
-    await ensure_cosmetic_roles_fresh()
+async def getrole(ctx, *, role_name: str):
+    # Lookup cosmetic role config from the cached dictionary
+    role_key = role_name.lower()
+    role_data = COSMETIC_ROLES.get(role_key)
 
-    if not role_key:
-        await ctx.send("❌ Usage: !getrole <role_key>")
+    if not role_data:
+        await ctx.send("❌ That cosmetic role does not exist.")
         return
 
-    key_lower = role_key.lower()
-    role_name = COSMETIC_ROLES.get(key_lower)
-    if not role_name:
-        await ctx.send("❌ That role doesn't exist. Use !listroles to view available keys.")
+    # Look for the actual role object in the server
+    role = discord.utils.get(ctx.guild.roles, name=role_name)
+    if not role:
+        await ctx.send("⚠️ That role exists in the list, but not on the server. Ask an admin to add it.")
         return
 
-    # Find the actual role object on this guild (case-insensitive)
-    new_role = discord.utils.find(lambda r: r.name.lower() == role_name.lower(), ctx.guild.roles)
-    if new_role is None:
-        await ctx.send(f"❌ Role '{role_name}' does not exist on this server.")
-        return
-
-    # Remove old cosmetic roles except the new one
-    old_roles = []
-    for k, v in COSMETIC_ROLES.items():
-        if k != key_lower:
-            role_obj = discord.utils.find(lambda r: r.name.lower() == v.lower(), ctx.guild.roles)
-            if role_obj:
-                old_roles.append(role_obj)
-
-    try:
-        if old_roles:
-            await ctx.author.remove_roles(*old_roles)
-            print(f"[DEBUG] Removed old cosmetic roles {[r.name for r in old_roles]} from {ctx.author}")
-        await ctx.author.add_roles(new_role)
-        print(f"[DEBUG] Added role {new_role.name} to {ctx.author}")
-        await ctx.send(f"✅ You now have the **{new_role.name}** role.")
-    except Exception as e:
-        print(f"❌ Failed to assign roles: {e}")
-        await ctx.send(f"❌ Error assigning roles: {e}")
+    # Toggle the role
+    if role in ctx.author.roles:
+        try:
+            await ctx.author.remove_roles(role)
+            await ctx.send(f"❎ Removed role **{role_name}**.")
+        except Exception as e:
+            await ctx.send(f"❌ Failed to remove role: `{e}`")
+    else:
+        try:
+            await ctx.author.add_roles(role)
+            await ctx.send(f"✅ You now have the **{role_name}** role.")
+        except Exception as e:
+            await ctx.send(f"❌ Failed to assign role: `{e}`")
 
 # Manual remove role
 @bot.command()
@@ -570,8 +569,10 @@ async def testrole(ctx):
     else:
         await ctx.send("❌ Couldn't find role.")
 
-
-
+@bot.command()
+async def refreshroles(ctx):
+    await fetch_cosmetic_roles()
+    await ctx.send("🔁 Cosmetic roles refreshed from GitHub.")
 
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
