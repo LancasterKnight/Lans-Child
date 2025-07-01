@@ -479,6 +479,8 @@ async def listroles(ctx):
 # --- Get Cosmetic Role Command ---
 @bot.command()
 async def getrole(ctx, *, role_name: str):
+    await ensure_cosmetic_roles_fresh()  # Auto-refresh the cache
+
     # Lookup cosmetic role config from the cached dictionary
     role_key = role_name.lower()
     role_data = COSMETIC_ROLES.get(role_key)
