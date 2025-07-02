@@ -308,30 +308,19 @@ async def on_message(message):
     if any(phrase in message.content.lower() for phrase in trigger_memes):
         await message.channel.send(random.choice(responses_memes))
 
-    trigger_lan = ["i love lancaster", "i prefer lancaster"]
-    responses_lan = [
-        "Objectively the best.",
-        "Glorious.",
-        "I must say, I do like your style.",
-        "This is the only path to glory.",
-        "I asked Jinn, she tells me this is OTP.",
-        "So do I."
-     ]
-
-    if any(phrase in message.content.lower() for phrase in trigger_lan):
-        await message.channel.send(random.choice(responses_lan))
-
         
-    trigger_wr = ["i love whiterose", "i prefer whiterose"]
-    responses_wr = [
+    trigger_ship = ["i love lancaster", "i love whiterose", "i love milk and cereal"]
+    responses_ship = [
         "Of course you do.",
         "We know...",
         "And the sky is blue.",
-        "yes, I heard you the first 500 times"
+        "yes, I heard you the first 500 times",
+        "I must say, I do like your style.",
+        "So do I."
      ]
 
-    if any(phrase in message.content.lower() for phrase in trigger_wr):
-        await message.channel.send(random.choice(responses_wr))
+    if any(phrase in message.content.lower() for phrase in trigger_ship):
+        await message.channel.send(random.choice(responses_ship))
 
 
     trigger_oz = ["oz", "ozma", "ozpin"]
@@ -581,7 +570,47 @@ async def remove(ctx, member: discord.Member = None):
         await ctx.send(f"✅ Removed: {', '.join(removed)} from {member.display_name}.")
     else:
         await ctx.send(f"ℹ️ No cosmetic roles were removed from {member.display_name}.")
-        
+
+# --- 8ball ---
+@bot.command(name='ask')
+async def ask(ctx, *, question: str):
+    responses = [
+        "Oh darling, even *you* should know better than to ask *that*.",
+        "I foresaw your failure before you finished the sentence.",
+        "Cute question. Tragic life.",
+        "Why ask me when you clearly won't listen to reason?",
+        "Yes—but you'll still mess it up somehow.",
+        "No—and your haircut agrees.",
+        "Absolutely. Just not for *you*.",
+        "Wouldn't you like to know, you little mortal disaster?",
+        "Try again later. Or don't. Honestly, it's the same either way.",
+        "Signs point to 'You're embarrassing yourself.'",
+        "The aura forecast? Stormy, with a 100% chance of dumb decisions.",
+        "I’d say yes, but lying is Ozpin’s job.",
+        "You couldn’t handle the truth even if I spoon-fed it to you.",
+        "Let me guess—you asked Jinn first and even *she* sighed.",
+        "You’re wasting your breath and my infinite time.",
+        "Outlook not good. Much like your taste in ships.",
+        "Do you want the truth, or do you want to feel better? Pick one.",
+        "It is decidedly so. Against all odds. And better judgment.",
+        "My Grimm laugh at your optimism.",
+        "Let me answer your question with another: *Why are you like this?*",
+        "A bold inquiry for someone with your... track record.",
+        "Sure, if you consider failure a valid outcome.",
+        "Qrow flipped a coin on your odds. It shattered. Very on-brand.",
+        "Cinder says yes. Which means it's definitely a no.",
+        "Yang would punch first and ask later. You're at least skipping to the asking part—progress!",
+        "Your odds are about as good as Team RWBY’s plan actually working on the first try.",
+        "Ask again later—I'm busy plotting the end of your social life. Not that you had one to begin with.",
+        "If I had a Lien for every foolish question I’ve heard, I’d still destroy the world, but in couture.",
+        "Ah yes, rely on a talking orb. Very strategic.",
+        "Blake wrote a novel about your chances. It’s in the fiction section, obviously.",
+        "Ironwood would’ve said yes, then shot you. I'm just saving time."
+    ]
+
+    await ctx.send(f"🎱 {random.choice(responses)}")
+
+
 # --- Help command ---
 @bot.command(name='help')
 async def help_command(ctx):
@@ -639,6 +668,11 @@ async def help_command(ctx):
     embed.add_field(
         name="!poll [yes/no question] (WIP)",
         value="posts a simple yes/no question with reacts",
+        inline=False
+    )
+    embed.add_field(
+        name="!ask",
+        value="Ask Salem a question like you would a magic 8ball and see how she responds!",
         inline=False
     )
     embed.set_footer(text="More features coming soon!")
