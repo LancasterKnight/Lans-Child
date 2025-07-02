@@ -21,7 +21,6 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)]
 )
 
-bot.remove_command('help')
 logger = logging.getLogger()
 
 prompt_lock = asyncio.Lock()
@@ -57,6 +56,7 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
+bot.remove_command('help')
 counter = 0
 counter_message = None
 current_weekly_prompt = None
