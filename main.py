@@ -307,7 +307,32 @@ async def on_message(message):
     if any(phrase in message.content.lower() for phrase in trigger_memes):
         await message.channel.send(random.choice(responses_memes))
 
-    
+    trigger_lan = ["I love lancaster", "I prefer lancaster"]
+    responses_lan = [
+        "Objectively the best.",
+        "Glorious.",
+        "I must say, I do like your style.",
+        "This is the only path to glory.",
+        "I asked Jinn, she tells me this is OTP.",
+        "So do I."
+     ]
+
+    if any(phrase in message.content.lower() for phrase in trigger_lan):
+        await message.channel.send(random.choice(responses_lan))
+
+        
+    trigger_wr = ["I love whiterose", "I prefer whiterose"]
+    responses_wr = [
+        "Of course you do.",
+        "We know...",
+        "And the sky is blue.",
+        "yes, I heard you the first 500 times"
+     ]
+
+    if any(phrase in message.content.lower() for phrase in trigger_wr):
+        await message.channel.send(random.choice(responses_wr))
+
+
     trigger_oz = ["oz", "ozma", "ozpin"]
     responses_oz = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
@@ -349,32 +374,6 @@ async def on_message(message):
         else:
             # Send one of the text responses (choice_index-1 because 0 is sticker)
             await responses_oz[choice_index - 1](message.channel)
-
-    trigger_lan = ["I love lancaster", "I prefer lancaster"]
-    responses_lan = [
-        "Objectively the best.",
-        "Glorious.",
-        "I must say, I do like your style.",
-        "This is the only path to glory.",
-        "I asked Jinn, she tells me this is OTP.",
-        "So do I."
-     ]
-
-    if any(phrase in message.content.lower() for phrase in trigger_lan):
-        await message.channel.send(random.choice(responses_lan))
-
-        
-    trigger_wr = ["I love whiterose", "I prefer whiterose"]
-    responses_wr = [
-        "Of course you do.",
-        "We know...",
-        "And the sky is blue.",
-        "yes, I heard you the first 500 times"
-     ]
-
-    if any(phrase in message.content.lower() for phrase in trigger_wr):
-        await message.channel.send(random.choice(responses_wr))
-
 
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
