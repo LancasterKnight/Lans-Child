@@ -326,7 +326,7 @@ async def on_message(message):
         lambda c: c.send("Ozpin’s greatest power is reincarnation—because failure *that* consistent needs infinite do-overs."),
         lambda c: c.send("He hides in teenagers like a parasite with a god complex and a dress code."),
         lambda c: c.send("For a man burdened with centuries of wisdom, he sure makes decisions like a hungover raccoon."),
-        lambda c: c.send("Ozpin’s idea of strategy? Cryptic riddles and a prayer the the children figure it out."),
+        lambda c: c.send("Ozpin’s idea of strategy? Cryptic riddles and a prayer that the children figure it out."),
         lambda c: c.send("If I had a Lien for every time he said 'You must trust me' before everything exploded, I’d fund a second war."),
         lambda c: c.send("He drinks hot chocolate like it holds the answers to his mistakes. It doesn’t, Ozma."),
         lambda c: c.send("He’s the only immortal I know who dies more often than he makes a decent plan."),
