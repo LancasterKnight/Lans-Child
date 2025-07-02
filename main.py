@@ -279,40 +279,37 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    trigger_phrases = ["salem is a bitch"]
-    responses = [
+    salem_trigger = ["salem is a bitch"]
+    salem_response = [
         "What the fuck did you just fucking say about me, you little bitch? I’ll have you know I graduated top of my class in Beacon, and I’ve been involved in numerous secret raids on Vacuo, and I have over 300 confirmed kills. I am trained in Grimm warfare and I’m the top huntress in the entire Beacon armed forces. You are nothing to me but just another target. I will wipe you the fuck out with precision the likes of which has never been seen before on Remnant, mark my fucking words. You think you can get away with saying that shit to me over the Continental Communications Network? Think again, fucker. As we speak I am contacting my secret network of huntsmen across Vale and your IP is being traced by Watts right now so you better prepare for the storm, maggot. The storm that wipes out the pathetic little thing you call your life. You’re fucking dead, kid. I can be anywhere, anytime, and I can kill you in over seven hundred ways, and that’s just with my bare hands. Not only am I extensively trained in unarmed combat, but I have access to the entire arsenal of Ruby Rose's weapon garage and I will use it to its full extent to wipe your miserable ass off the face of the continent, you little shit. If only you could have known what unholy retribution your little “clever” comment was about to bring down upon you, maybe you would have held your fucking tongue. But you couldn’t, you didn’t, and now you’re paying the price, you goddamn idiot. I will shit fury all over you and you will drown in it. You’re fucking dead, kiddo.",
 
     ]
 
-    if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        await message.channel.send(random.choice(responses))
+    if any(phrase in message.content.lower() for phrase in salem_trigger):
+        await message.channel.send(random.choice(salem_response))
 
     
-    trigger_phrases = ["oven", "cooking device"]
-    responses = [
+    trigger_oven = ["oven", "cooking device"]
+    response_oven = [
         "HIDE YO CHILDREN!"
     ]
-
     
-    if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        await message.channel.send(random.choice(responses))
+    if any(phrase in message.content.lower() for phrase in trigger_oven):
+        await message.channel.send(random.choice(response_oven))
 
-        trigger_phrases = ["witherose", "dearth"]
-    responses = [
+    trigger_memes = ["witherose", "dearth"]
+    responses_memes = [
         "Go back to speech class!",
         "Dan they said the thing!",
         "heh, classic"
     ]
 
-    
-    if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        await message.channel.send(random.choice(responses))
+    if any(phrase in message.content.lower() for phrase in trigger_memes):
+        await message.channel.send(random.choice(responses_memes))
 
     
-    trigger_phrases = ["oz", "ozma", "ozpin"]
-
-    responses = [
+    trigger_oz = ["oz", "ozma", "ozpin"]
+    responses_oz = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
         lambda c: c.send("This is the beginning of the end, Ozpin."),
         lambda c: c.send("NO!"),
@@ -336,9 +333,9 @@ async def on_message(message):
 
     ]
 
-    if any(phrase in message.content.lower() for phrase in trigger_phrases):
+    if any(phrase in message.content.lower() for phrase in trigger_oz):
         # Number of text responses
-        num_responses = len(responses)
+        num_responses = len(responses_oz)
 
         # Total options = text responses + 1 sticker
         total_options = num_responses + 1
@@ -351,10 +348,10 @@ async def on_message(message):
             await message.channel.send(stickers=[sticker])
         else:
             # Send one of the text responses (choice_index-1 because 0 is sticker)
-            await responses[choice_index - 1](message.channel)
+            await responses_oz[choice_index - 1](message.channel)
 
-    trigger_phrases = ["I love lancaster", "I prefer lancaster"]
-    responses = [
+    trigger_lan = ["I love lancaster", "I prefer lancaster"]
+    responses_lan = [
         "Objectively the best.",
         "Glorious.",
         "I must say, I do like your style.",
@@ -363,20 +360,20 @@ async def on_message(message):
         "So do I."
      ]
 
-    if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        await message.channel.send(random.choice(responses))
+    if any(phrase in message.content.lower() for phrase in trigger_lan):
+        await message.channel.send(random.choice(responses_lan))
 
         
-    trigger_phrases = ["I love whiterose", "I prefer whiterose"]
-    responses = [
+    trigger_wr = ["I love whiterose", "I prefer whiterose"]
+    responses_wr = [
         "Of course you do.",
         "We know...",
         "And the sky is blue.",
         "yes, I heard you the first 500 times"
      ]
 
-    if any(phrase in message.content.lower() for phrase in trigger_phrases):
-        await message.channel.send(random.choice(responses))
+    if any(phrase in message.content.lower() for phrase in trigger_wr):
+        await message.channel.send(random.choice(responses_wr))
 
 
     await bot.process_commands(message)  # <- This line is required to make !commands work
