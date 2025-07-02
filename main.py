@@ -605,7 +605,29 @@ async def ask(ctx, *, question: str):
         "If I had a Lien for every foolish question I’ve heard, I’d still destroy the world, but in couture.",
         "Ah yes, rely on a talking orb. Very strategic.",
         "Blake wrote a novel about your chances. It’s in the fiction section, obviously.",
-        "Ironwood would’ve said yes, then shot you. I'm just saving time."
+        "Ironwood would’ve said yes, then shot you. I'm just saving time.",
+        "Oh, darling… even Nora has better impulse control than that idea.",
+        "Do it. Be the disaster you were born to be.",
+        "I consulted the Jinn. She laughed.",
+        "You’re about as subtle as Cinder in an orphanage.",
+        "I’d tell you the truth, but then you’d act on it. And we can't have that.",
+        "Ozpin tried that once. He died. Repeatedly.",
+        "Yes—if your goal is total emotional ruin.",
+        "You have the confidence of Yang and the planning of Jaune. That’s… brave.",
+        "Please proceed. I haven’t had a reason to cackle all week.",
+        "Would Raven approve? Actually, never mind. She's not even here.",
+        "I asked Mercury. He danced around the answer—literally.",
+        "No. And not in the cool, mysterious way. In the sad, cringe way.",
+        "Sure, if you want to end up like Roman.",
+        "You’ve got more blind optimism than Ruby. I’m impressed. And concerned.",
+        "It’s a yes, but only in the way that Penny is technically a real girl.",
+        "Ren meditated on this for hours. It's still a stupid question.",
+        "Neo screamed at the question. She’s mute. Think about that.",
+        "This is why I stopped trusting humans. And faunus. And everyone, really.",
+        "Are you trying to impress me? Because it’s working. In a 'look at this tragic fool' way.",
+        "Hazel said no. And Hazel says yes to punching children, so…",
+        "Blake ran from this question. That should tell you everything.",
+        "Like the Schnee family, this answer is cursed and inherited."
     ]
 
     await ctx.send(f"🎱 {random.choice(responses)}")
