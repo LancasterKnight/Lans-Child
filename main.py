@@ -21,6 +21,7 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)]
 )
 
+bot.remove_command('help')
 logger = logging.getLogger()
 
 prompt_lock = asyncio.Lock()
@@ -307,7 +308,7 @@ async def on_message(message):
     if any(phrase in message.content.lower() for phrase in trigger_memes):
         await message.channel.send(random.choice(responses_memes))
 
-    trigger_lan = ["I love lancaster", "I prefer lancaster"]
+    trigger_lan = ["i love lancaster", "i prefer lancaster"]
     responses_lan = [
         "Objectively the best.",
         "Glorious.",
@@ -321,7 +322,7 @@ async def on_message(message):
         await message.channel.send(random.choice(responses_lan))
 
         
-    trigger_wr = ["I love whiterose", "I prefer whiterose"]
+    trigger_wr = ["i love whiterose", "i prefer whiterose"]
     responses_wr = [
         "Of course you do.",
         "We know...",
@@ -580,6 +581,72 @@ async def remove(ctx, member: discord.Member = None):
         await ctx.send(f"✅ Removed: {', '.join(removed)} from {member.display_name}.")
     else:
         await ctx.send(f"ℹ️ No cosmetic roles were removed from {member.display_name}.")
+        
+# --- Help command ---
+@bot.command(name='help')
+async def help_command(ctx):
+    embed = discord.Embed(
+        title="Help Menu",
+        description="Here are the available commands:",
+        color=discord.Color.white()
+    )
+
+    embed.add_field(
+        name="!help",
+        value="Displays this help message.",
+        inline=False
+    )
+    embed.add_field(
+        name="!getrole [role_key]",
+        value="Assign yourself a cosmetic role. check the key for each role by using '!listroles'",
+        inline=False
+    )
+    embed.add_field(
+        name="!addrole [key] [role name] (Admin only)",
+        value="Add a new cosmetic role. Ask Lan for instructions.",
+        inline=False
+    )
+    embed.add_field(
+        name="!listroles",
+        value="List all available cosmetic roles and their keys.",
+        inline=False
+    )
+    embed.add_field(
+        name="!remove",
+        value="Clears your cosmetic roles.",
+        inline=False
+    )
+    embed.add_field(
+        name="!prompt",
+        value="Get the current weekly writing prompt.",
+        inline=False
+    )
+    embed.add_field(
+        name="!forceprompt (Admin only)",
+        value="Refreshes the weekly prompt.",
+        inline=False
+    )
+    embed.add_field(
+        name="!gif [search term]",
+        value="Posts a random gif from giphy based on your inputted search term.",
+        inline=False
+    )
+    embed.add_field(
+        name="!gold",
+        value="Try it out ;)",
+        inline=False
+    )
+    embed.add_field(
+        name="!poll [yes/no question] (WIP)",
+        value="posts a simple yes/no question with reacts",
+        inline=False
+    )
+    embed.set_footer(text="More features coming soon!")
+
+    await ctx.send(embed=embed)
+
+
+
 
 # --- Keep-Alive Counter ---
 @tasks.loop(minutes=1)
@@ -598,22 +665,11 @@ async def keep_alive_counter():
     except Exception as e:
         print(f"❌ Failed to send/edit keep-alive message: {e}")
 
-# --- test command ---
+#--- debugging ---
 @bot.command()
 async def test(ctx):
     print("✅ Command test triggered")
     await ctx.send("Test successful.")
-
-#--- debugging ---
-@bot.command()
-async def testrole(ctx):
-    role = discord.utils.get(ctx.guild.roles, name="Red Role")
-    print(f"[DEBUG] Found role: {role}")
-    if role:
-        await ctx.author.add_roles(role)
-        await ctx.send("✅ Role added manually.")
-    else:
-        await ctx.send("❌ Couldn't find role.")
 
 @bot.command()
 async def refreshroles(ctx):
