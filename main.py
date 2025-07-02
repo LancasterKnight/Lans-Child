@@ -294,6 +294,18 @@ async def on_message(message):
         "HIDE YO CHILDREN!"
     ]
 
+    
+    if any(phrase in message.content.lower() for phrase in trigger_phrases):
+        await message.channel.send(random.choice(responses))
+
+        trigger_phrases = ["witherose", "dearth"]
+    responses = [
+        "Go back to speech class!",
+        "Dan they said the thing!",
+        "heh, classic"
+    ]
+
+    
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
         await message.channel.send(random.choice(responses))
 
@@ -311,6 +323,17 @@ async def on_message(message):
         lambda c: c.send("Back from the dead? Pity."),
         lambda c: c.send("I’d say you’ve aged like wine—but vinegar is more accurate."),
         lambda c: c.send("Still using that face? Bold."),
+        lambda c: c.send("Ozpin’s greatest power is reincarnation—because failure *that* consistent needs infinite do-overs."),
+        lambda c: c.send("He hides in teenagers like a parasite with a god complex and a dress code."),
+        lambda c: c.send("For a man burdened with centuries of wisdom, he sure makes decisions like a hungover raccoon."),
+        lambda c: c.send("Ozpin’s idea of strategy? Cryptic riddles and a prayer the the children figure it out."),
+        lambda c: c.send("If I had a Lien for every time he said 'You must trust me' before everything exploded, I’d fund a second war."),
+        lambda c: c.send("He drinks hot chocolate like it holds the answers to his mistakes. It doesn’t, Ozma."),
+        lambda c: c.send("He’s the only immortal I know who dies more often than he makes a decent plan."),
+        lambda c: c.send("Honestly, if the gods punished me by turning *him* into my soulmate, I think I got the worse end of the deal."),
+        lambda c: c.send("Ozpin’s battle tactics are just variations of ‘Send the children and hope.’ Revolutionary."),
+        lambda c: c.send("He talks about hope like it's a strategy. I talk about results like it's reality."),
+
     ]
 
     if any(phrase in message.content.lower() for phrase in trigger_phrases):
@@ -330,18 +353,30 @@ async def on_message(message):
             # Send one of the text responses (choice_index-1 because 0 is sticker)
             await responses[choice_index - 1](message.channel)
 
-#    trigger_phrases = ["lancaster", "ladybug", "nuts and dolts"]
-#    responses = [
-#        "Objectively the best.",
-#        "Glorious.",
-#        "I must say, I do like your style.",
-#        "This is the only path to glory.",
-#        "I asked Jinn, she tells me this is OTP.",
-#        "Peak."
-#     ]
+    trigger_phrases = ["I love lancaster", "I prefer lancaster"]
+    responses = [
+        "Objectively the best.",
+        "Glorious.",
+        "I must say, I do like your style.",
+        "This is the only path to glory.",
+        "I asked Jinn, she tells me this is OTP.",
+        "So do I."
+     ]
 
-#    if any(phrase in message.content.lower() for phrase in trigger_phrases):
-#        await message.channel.send(random.choice(responses))
+    if any(phrase in message.content.lower() for phrase in trigger_phrases):
+        await message.channel.send(random.choice(responses))
+
+        
+    trigger_phrases = ["I love whiterose", "I prefer whiterose"]
+    responses = [
+        "Of course you do.",
+        "We know...",
+        "And the sky is blue.",
+        "yes, I heard you the first 500 times"
+     ]
+
+    if any(phrase in message.content.lower() for phrase in trigger_phrases):
+        await message.channel.send(random.choice(responses))
 
 
     await bot.process_commands(message)  # <- This line is required to make !commands work
