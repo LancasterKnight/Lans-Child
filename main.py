@@ -588,7 +588,7 @@ async def help_command(ctx):
     embed = discord.Embed(
         title="Help Menu",
         description="Here are the available commands:",
-        color=discord.Color.white()
+        color=discord.Color(0xFFFFFF)
     )
 
     embed.add_field(
