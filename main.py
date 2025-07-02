@@ -390,13 +390,13 @@ async def hello(ctx):
     await ctx.send(f"Greetings, {ctx.author.mention}!")
 
     # --- gold command ---
-    links = [
-        "You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/Lancaster_Knight/works!",
-        "You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/Moxy125/pseuds/Moxy125/works!",
-        "You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/L4dftw/pseuds/L4dftw/works!",
-        "You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/Firebirds_child/pseuds/Firebirds_child/works!"
+links = [
+    "You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/Lancaster_Knight/works!",
+    "You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/Moxy125/pseuds/Moxy125/works!",
+    "You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/L4dftw/pseuds/L4dftw/works!",
+    "You want the best writing ever? Here's my recommendation! https://archiveofourown.org/users/Firebirds_child/pseuds/Firebirds_child/works!"
         ]
-    gold_index = 0
+gold_index = 0
     
 @bot.command()
 async def gold(ctx):
