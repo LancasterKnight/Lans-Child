@@ -402,10 +402,10 @@ async def hello(ctx):
 async def gold(ctx):
     global gold_index  # tell Python we're using the global variable
 
-    await ctx.send(gold_links[gold_index])
+    await ctx.send(links[gold_index])
 
     # Move index forward, cycle back to 0 if at the end
-    gold_index = (gold_index + 1) % len(gold_links)
+    gold_index = (gold_index + 1) % len(links)
     # --- ---
 #@bot.command()
 #@commands.has_permissions(administrator=True)
