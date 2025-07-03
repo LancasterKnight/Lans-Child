@@ -461,16 +461,17 @@ async def prompt(ctx):
 
 @bot.command()
 async def gif(ctx, *, search: str):
-    api_key = os.getenv("GIPHY_API_KEY")
-    url = f"https://api.giphy.com/v1/gifs/search?api_key={api_key}&q={search}&limit=50&offset=0&rating=g&lang=en"
+    tenor_api_key = os.getenv("TENOR_API_KEY")
+    url = f"https://tenor.googleapis.com/v2/search?q={search}&key={tenor_api_key}&limit=20"
+
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             data = await response.json()
-            results = data.get("data")
+            results = data.get("results")
             if not results:
                 await ctx.reply(f"❌ No GIFs found for `{search}`.")
                 return
-            gif_url = random.choice(results)['images']['original']['url']
+            gif_url = random.choice(results)['media_formats']['gif']['url']
             await ctx.reply(gif_url)
 
 # --- Add Cosmetic Role Command ---
