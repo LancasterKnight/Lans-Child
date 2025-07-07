@@ -296,8 +296,8 @@ async def on_message(message):
         "You always say that yet you never actually start..."
     ]
     
-    if any(phrase in message.content.lower() for phrase in trigger_oven):
-        await message.channel.send(random.choice(response_oven))
+    if any(phrase in message.content.lower() for phrase in trigger_write):
+        await message.channel.send(random.choice(response_write))
 #---
 #---    
     trigger_oven = ["oven", "cooking device"]
@@ -315,8 +315,8 @@ async def on_message(message):
     
     ]
     
-    if any(phrase in message.content.lower() for phrase in trigger_oven):
-        await message.channel.send(random.choice(response_oven))
+    if any(phrase in message.content.lower() for phrase in trigger_sic):
+        await message.channel.send(random.choice(response_sic))
 #---
 #---    
     trigger_memes = ["witherose", "dearth"]
