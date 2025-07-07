@@ -290,8 +290,8 @@ async def on_message(message):
         await message.channel.send(random.choice(salem_response))
 #---
 #---    
-    trigger_oven = ["i need to write", "i need to start writing", "i should write", "i should start writing"]
-    response_oven = [
+    trigger_write = ["i need to write", "i need to start writing", "i should write", "i should start writing"]
+    response_write = [
         "Yes, you really should...",
         "You always say that yet you never actually start..."
     ]
@@ -309,9 +309,10 @@ async def on_message(message):
         await message.channel.send(random.choice(response_oven))
 #---
 #---        
-        trigger_oven = ["salem, get his ass", "salem, get her ass"]
-    response_oven = [
-"Oh, how deliciously petty—you’ve summoned me to do your dirty work? Very well, I do love a little public evisceration. Listen closely, you sentient participation trophy. You strut into this server like a malformed PNG with the audacity of someone who thinks edgy sarcasm is a personality. I've seen Beowolves with more charisma and syntax. Your takes are so stale I had to check the expiration date on your opinions—and surprise! They've been rotting since Volume 3. You think you're misunderstood? Darling, you're not deep, you're just confusingly loud. If intelligence were Dust, you'd be an empty vial labeled vibes. Now scurry back to the shadows from whence you came—no, not the cool kind. The sad little corner of the server where muted mics and shattered self-esteem go to die. You're lucky a mod called me in. If Hazel were here, you'd already be a crater."
+        trigger_sic = ["salem, get his ass", "salem, get her ass"]
+    response_sic = [
+        "Oh, how deliciously petty! You’ve summoned me to do your dirty work? Very well, I do love a little public evisceration. Listen closely, you sentient participation trophy. You strut into this server like a malformed PNG with the audacity of someone who thinks edgy sarcasm is a personality. I've seen Beowolves with more charisma and syntax. Your takes are so stale I had to check the expiration date on your opinions—and surprise! They've been rotting since Volume 3. You think you're misunderstood? Darling, you're not deep, you're just confusingly loud. If intelligence were Dust, you'd be an empty vial labeled vibes. Now scurry back to the shadows from whence you came—no, not the cool kind. The sad little corner of the server where muted mics and shattered self-esteem go to die. You're lucky a mod called me in. If Hazel were here, you'd already be a crater."
+    
     ]
     
     if any(phrase in message.content.lower() for phrase in trigger_oven):
