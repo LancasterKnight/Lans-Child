@@ -279,7 +279,7 @@ async def on_member_join(member):
 async def on_message(message):
     if message.author == bot.user:
         return
-
+#---
     salem_trigger = ["salem is a bitch"]
     salem_response = [
         "What the fuck did you just fucking say about me, you little bitch? I’ll have you know I graduated top of my class in Beacon, and I’ve been involved in numerous secret raids on Vacuo, and I have over 300 confirmed kills. I am trained in Grimm warfare and I’m the top huntress in the entire Beacon armed forces. You are nothing to me but just another target. I will wipe you the fuck out with precision the likes of which has never been seen before on Remnant, mark my fucking words. You think you can get away with saying that shit to me over the Continental Communications Network? Think again, fucker. As we speak I am contacting my secret network of huntsmen across Vale and your IP is being traced by Watts right now so you better prepare for the storm, maggot. The storm that wipes out the pathetic little thing you call your life. You’re fucking dead, kid. I can be anywhere, anytime, and I can kill you in over seven hundred ways, and that’s just with my bare hands. Not only am I extensively trained in unarmed combat, but I have access to the entire arsenal of Ruby Rose's weapon garage and I will use it to its full extent to wipe your miserable ass off the face of the continent, you little shit. If only you could have known what unholy retribution your little “clever” comment was about to bring down upon you, maybe you would have held your fucking tongue. But you couldn’t, you didn’t, and now you’re paying the price, you goddamn idiot. I will shit fury all over you and you will drown in it. You’re fucking dead, kiddo.",
@@ -288,8 +288,18 @@ async def on_message(message):
 
     if any(phrase in message.content.lower() for phrase in salem_trigger):
         await message.channel.send(random.choice(salem_response))
-
+#---
+#---    
+    trigger_oven = ["i need to write", "i need to start writing", "i should write", "i should start writing"]
+    response_oven = [
+        "Yes, you really should...",
+        "You always say that yet you never actually start..."
+    ]
     
+    if any(phrase in message.content.lower() for phrase in trigger_oven):
+        await message.channel.send(random.choice(response_oven))
+#---
+#---    
     trigger_oven = ["oven", "cooking device"]
     response_oven = [
         "HIDE YO CHILDREN!"
@@ -297,7 +307,17 @@ async def on_message(message):
     
     if any(phrase in message.content.lower() for phrase in trigger_oven):
         await message.channel.send(random.choice(response_oven))
-
+#---
+#---        
+        trigger_oven = ["salem, get his ass", "salem, get her ass"]
+    response_oven = [
+"Oh, how deliciously petty—you’ve summoned me to do your dirty work? Very well, I do love a little public evisceration. Listen closely, you sentient participation trophy. You strut into this server like a malformed PNG with the audacity of someone who thinks edgy sarcasm is a personality. I've seen Beowolves with more charisma and syntax. Your takes are so stale I had to check the expiration date on your opinions—and surprise! They've been rotting since Volume 3. You think you're misunderstood? Darling, you're not deep, you're just confusingly loud. If intelligence were Dust, you'd be an empty vial labeled vibes. Now scurry back to the shadows from whence you came—no, not the cool kind. The sad little corner of the server where muted mics and shattered self-esteem go to die. You're lucky a mod called me in. If Hazel were here, you'd already be a crater."
+    ]
+    
+    if any(phrase in message.content.lower() for phrase in trigger_oven):
+        await message.channel.send(random.choice(response_oven))
+#---
+#---    
     trigger_memes = ["witherose", "dearth"]
     responses_memes = [
         "Go back to speech class!",
@@ -307,8 +327,8 @@ async def on_message(message):
 
     if any(phrase in message.content.lower() for phrase in trigger_memes):
         await message.channel.send(random.choice(responses_memes))
-
-        
+#---
+#---        
     trigger_ship = ["i love lancaster", "i love whiterose", "i love milk and cereal"]
     responses_ship = [
         "Of course you do.",
@@ -321,8 +341,8 @@ async def on_message(message):
 
     if any(phrase in message.content.lower() for phrase in trigger_ship):
         await message.channel.send(random.choice(responses_ship))
-
-
+#---
+#---
     trigger_oz = ["oz", "ozma", "ozpin"]
     responses_oz = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
@@ -364,7 +384,7 @@ async def on_message(message):
         else:
             # Send one of the text responses (choice_index-1 because 0 is sticker)
             await responses_oz[choice_index - 1](message.channel)
-
+#---
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
 # --- Commands ---
@@ -535,7 +555,7 @@ async def getrole(ctx, *, role_name: str):
     if role in ctx.author.roles:
         try:
             await ctx.author.remove_roles(role)
-            await ctx.send(f"❎ Removed role **{role_name}**.")
+            await ctx.send(f"❎ Removed role **{role_data}**.")
         except Exception as e:
             await ctx.send(f"❌ Failed to remove role: `{e}`")
     else:
@@ -554,7 +574,7 @@ async def getrole(ctx, *, role_name: str):
                 print(f"🔻 Removed old cosmetic roles: {[r.name for r in roles_to_remove]}")
 
             await ctx.author.add_roles(role)
-            await ctx.send(f"✅ You now have the **{role_name}** role.")
+            await ctx.send(f"✅ You now have the **{role_data}** role.")
         except Exception as e:
             await ctx.send(f"❌ Failed to assign role: `{e}`")
 
