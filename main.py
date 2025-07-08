@@ -696,25 +696,50 @@ async def define(ctx, *, word: str):
             data = await response.json()
 
             try:
-                lexical_entry = data['results'][0]['lexicalEntries'][0]
-                part_of_speech = lexical_entry['lexicalCategory']['text']
-                senses = lexical_entry['entries'][0]['senses']
+                results = data.get('results', [])
+                if not results:
+                    await ctx.reply(f"❌ No results found for `{word}`.")
+                    return
 
-                # Extract up to 3 definitions
-                definitions = [sense['definitions'][0] for sense in senses if 'definitions' in sense][:3]
+                lexical_entries = results[0].get('lexicalEntries', [])
+                if not lexical_entries:
+                    await ctx.reply(f"❌ No lexical entries found for `{word}`.")
+                    return
+
+                lexical_entry = lexical_entries[0]
+
+                part_of_speech = lexical_entry.get('lexicalCategory', {}).get('text', 'unknown')
+
+                entries = lexical_entry.get('entries', [])
+                if not entries:
+                    await ctx.reply(f"❌ No entries found for `{word}`.")
+                    return
+
+                senses = entries[0].get('senses', [])
+                if not senses:
+                    await ctx.reply(f"❌ No senses found for `{word}`.")
+                    return
+
+    # Extract up to 3 definitions, checking for 'definitions' or 'shortDefinitions'
+                definitions = []
+                for sense in senses:
+                    defs = sense.get('definitions') or sense.get('shortDefinitions')
+                    if defs:
+                        definitions.append(defs[0])
+                    if len(definitions) >= 3:
+                        break
+
                 if not definitions:
                     await ctx.reply(f"⚠️ Couldn't extract definitions for `{word}`.")
                     return
 
-                # Get pronunciation (IPA)
                 pronunciations = lexical_entry.get('pronunciations', [])
                 ipa = ""
                 for p in pronunciations:
-                    if 'phoneticSpelling' in p:
+                    if p.get('phoneticNotation') == 'IPA' and 'phoneticSpelling' in p:
                         ipa = f"/{p['phoneticSpelling']}/"
                         break
 
-                # Build the message
                 message = f"📘 **{word}** (*{part_of_speech}*)"
                 if ipa:
                     message += f" — {ipa}"
@@ -723,7 +748,7 @@ async def define(ctx, *, word: str):
                 for i, definition in enumerate(definitions, start=1):
                     message += f"\n`{i}.` {definition}"
 
-                # Optional example
+    # Optional example from first sense
                 example = senses[0].get('examples', [{}])[0].get('text', '')
                 if example:
                     message += f"\n✏️ _Example_: {example}"
@@ -731,8 +756,9 @@ async def define(ctx, *, word: str):
                 define_cache[word] = message
                 await ctx.reply(message)
 
-            except (KeyError, IndexError):
-                await ctx.reply(f"⚠️ Couldn't extract a definition for `{word}`.")
+            except Exception as e:
+                await ctx.reply(f"⚠️ An error occurred extracting the definition for `{word}`.")
+                print(f"Error extracting definition: {e}")
 
 # --- Help command ---
 @bot.command(name='help')
