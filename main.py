@@ -682,59 +682,63 @@ async def define(ctx, *, word):
         "app_key": OXFORD_APP_KEY
     }
 
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as resp:
-            if resp.status == 200:
-                data = await resp.json()
-                try:
-                    definition = data["results"][0]["lexicalEntries"][0]["entries"][0]["senses"][0]["definitions"][0]
-                    await ctx.send(f"**{word.capitalize()}**: {definition}")
-                except (KeyError, IndexError):
-                    await ctx.send(f"Sorry, I couldn't parse the definition for **{word}**.")
-            elif resp.status == 404:
-                await ctx.send(f"Sorry, I couldn't find a definition for **{word}**.")
-            else:
-                await ctx.send(f"Oxford API error: {resp.status}")
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
 
-    # Extract up to 3 definitions, checking for 'definitions' or 'shortDefinitions'
-                definitions = []
-                for sense in senses:
-                    defs = sense.get('definitions') or sense.get('shortDefinitions')
-                    if defs:
-                        definitions.append(defs[0])
-                    if len(definitions) >= 3:
-                        break
+                    lexical_entry = data["results"][0]["lexicalEntries"][0]
+                    entry = lexical_entry["entries"][0]
+                    senses = entry["senses"]
+                    part_of_speech = lexical_entry.get("lexicalCategory", {}).get("text", "Unknown")
 
-                if not definitions:
-                    await ctx.reply(f"⚠️ Couldn't extract definitions for `{word}`.")
-                    return
+                    # Extract up to 3 definitions
+                    definitions = []
+                    for sense in senses:
+                        defs = sense.get('definitions') or sense.get('shortDefinitions')
+                        if defs:
+                            definitions.append(defs[0])
+                        if len(definitions) >= 3:
+                            break
 
-                pronunciations = lexical_entry.get('pronunciations', [])
-                ipa = ""
-                for p in pronunciations:
-                    if p.get('phoneticNotation') == 'IPA' and 'phoneticSpelling' in p:
-                        ipa = f"/{p['phoneticSpelling']}/"
-                        break
+                    if not definitions:
+                        await ctx.reply(f"⚠️ Couldn't extract definitions for `{word}`.")
+                        return
 
-                message = f"📘 **{word}** (*{part_of_speech}*)"
-                if ipa:
-                    message += f" — {ipa}"
-                message += ":"
+                    # Get IPA pronunciation (optional)
+                    pronunciations = lexical_entry.get('pronunciations', [])
+                    ipa = ""
+                    for p in pronunciations:
+                        if p.get('phoneticNotation') == 'IPA' and 'phoneticSpelling' in p:
+                            ipa = f"/{p['phoneticSpelling']}/"
+                            break
 
-                for i, definition in enumerate(definitions, start=1):
-                    message += f"\n`{i}.` {definition}"
+                    # Format message
+                    message = f"📘 **{word}** (*{part_of_speech}*)"
+                    if ipa:
+                        message += f" — {ipa}"
+                    message += ":"
 
-    # Optional example from first sense
-                example = senses[0].get('examples', [{}])[0].get('text', '')
-                if example:
-                    message += f"\n✏️ _Example_: {example}"
+                    for i, definition in enumerate(definitions, start=1):
+                        message += f"\n`{i}.` {definition}"
 
-                define_cache[word] = message
-                await ctx.reply(message)
+                    # Optional example
+                    example = senses[0].get('examples', [{}])[0].get('text', '')
+                    if example:
+                        message += f"\n✏️ _Example_: {example}"
 
-            except Exception as e:
-                await ctx.reply(f"⚠️ An error occurred extracting the definition for `{word}`.")
-                print(f"Error extracting definition: {e}")
+                    define_cache[word] = message
+                    await ctx.reply(message)
+
+                elif resp.status == 404:
+                    await ctx.send(f"Sorry, I couldn't find a definition for **{word}**.")
+                else:
+                    await ctx.send(f"Oxford API error: {resp.status}")
+
+    except Exception as e:
+        await ctx.reply(f"⚠️ An error occurred extracting the definition for `{word}`.")
+        print(f"Error extracting definition: {e}")
 
 # --- Help command ---
 @bot.command(name='help')
