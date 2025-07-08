@@ -678,13 +678,13 @@ async def define(ctx, *, word: str):
         await ctx.reply(define_cache[word])
         return
 
-    app_id = os.getenv("OXFORD_APP_ID")
-    app_key = os.getenv("OXFORD_APP_KEY")
+    OXFORD_APP_ID = os.getenv("OXFORD_APP_ID")
+    OXFORD_APP_KEY = os.getenv("OXFORD_APP_KEY")
     url = f"https://od-api.oxforddictionaries.com/api/v2/entries/en-gb/{word}"
 
     headers = {
-        "app_id": app_id,
-        "app_key": app_key
+        "app_id": OXFORD_APP_ID,
+        "app_key": OXFORD_APP_KEY
     }
 
     async with aiohttp.ClientSession() as session:
