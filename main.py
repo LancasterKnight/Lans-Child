@@ -61,6 +61,7 @@ counter = 0
 counter_message = None
 current_weekly_prompt = None
 COSMETIC_ROLES = {}
+define_cache = {}
 
 headers = {
     "Authorization": f"token {GITHUB_TOKEN}",
@@ -668,6 +669,70 @@ async def ask(ctx, *, question: str):
 
     await ctx.send(f"🎱 {random.choice(responses)}")
 
+# --- Dictionary command ---
+@bot.command()
+async def define(ctx, *, word: str):
+    word = word.lower()
+
+    if word in define_cache:
+        await ctx.reply(define_cache[word])
+        return
+
+    app_id = os.getenv("OXFORD_APP_ID")
+    app_key = os.getenv("OXFORD_APP_KEY")
+    url = f"https://od-api.oxforddictionaries.com/api/v2/entries/en-gb/{word}"
+
+    headers = {
+        "app_id": app_id,
+        "app_key": app_key
+    }
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url, headers=headers) as response:
+            if response.status != 200:
+                await ctx.reply(f"❌ No definition found for `{word}`.")
+                return
+
+            data = await response.json()
+
+            try:
+                lexical_entry = data['results'][0]['lexicalEntries'][0]
+                part_of_speech = lexical_entry['lexicalCategory']['text']
+                senses = lexical_entry['entries'][0]['senses']
+
+                # Extract up to 3 definitions
+                definitions = [sense['definitions'][0] for sense in senses if 'definitions' in sense][:3]
+                if not definitions:
+                    await ctx.reply(f"⚠️ Couldn't extract definitions for `{word}`.")
+                    return
+
+                # Get pronunciation (IPA)
+                pronunciations = lexical_entry.get('pronunciations', [])
+                ipa = ""
+                for p in pronunciations:
+                    if 'phoneticSpelling' in p:
+                        ipa = f"/{p['phoneticSpelling']}/"
+                        break
+
+                # Build the message
+                message = f"📘 **{word}** (*{part_of_speech}*)"
+                if ipa:
+                    message += f" — {ipa}"
+                message += ":"
+
+                for i, definition in enumerate(definitions, start=1):
+                    message += f"\n`{i}.` {definition}"
+
+                # Optional example
+                example = senses[0].get('examples', [{}])[0].get('text', '')
+                if example:
+                    message += f"\n✏️ _Example_: {example}"
+
+                define_cache[word] = message
+                await ctx.reply(message)
+
+            except (KeyError, IndexError):
+                await ctx.reply(f"⚠️ Couldn't extract a definition for `{word}`.")
 
 # --- Help command ---
 @bot.command(name='help')
@@ -731,6 +796,11 @@ async def help_command(ctx):
     embed.add_field(
         name="!ask",
         value="Ask Salem a question like you would a magic 8ball and see how she responds!",
+        inline=False
+    )
+    embed.add_field(
+        name="!define [word]",
+        value="Ask Salem to give you the Oford dictionary definiton of a word. Please note that only 500 requests can be made per month, so do not spam this command out of consideration for others.",
         inline=False
     )
     embed.set_footer(text="More features coming soon!")
