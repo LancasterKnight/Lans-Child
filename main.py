@@ -688,18 +688,43 @@ async def define(ctx, *, word):
             async with session.get(url, headers=headers) as resp:
                 if resp.status == 200:
                     data = await resp.json()
+                    print("API response:", data)
 
-                    lexical_entry = data["results"][0]["lexicalEntries"][0]
-                    entry = lexical_entry["entries"][0]
-                    senses = entry["senses"]
-                    part_of_speech = lexical_entry.get("lexicalCategory", {}).get("text", "Unknown")
+                    results = data.get("results", [])
+                    if not results:
+                        await ctx.reply(f"No results found for `{word}`.")
+                        return
+
+                    lexical_entries = results[0].get("lexicalEntries", [])
+                    if not lexical_entries:
+                        await ctx.reply(f"No lexical entries found for `{word}`.")
+                        return
+
+                    entries = lexical_entries[0].get("entries", [])
+                    if not entries:
+                        await ctx.reply(f"No entries found for `{word}`.")
+                        return
+
+                    senses = entries[0].get("senses", [])
+                    if not senses:
+                        await ctx.reply(f"No senses found for `{word}`.")
+                        return
 
                     # Extract up to 3 definitions
                     definitions = []
+                    example = ""
+
                     for sense in senses:
                         defs = sense.get('definitions') or sense.get('shortDefinitions')
                         if defs:
                             definitions.append(defs[0])
+    
+                        # Try to get example text
+                        if not example:
+                            examples = sense.get('examples')
+                            if examples and len(examples) > 0:
+                                example = examples[0].get('text', '')
+    
                         if len(definitions) >= 3:
                             break
 
