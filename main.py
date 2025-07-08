@@ -795,7 +795,7 @@ async def help_command(ctx):
     )
     embed.add_field(
         name="!define [word]",
-        value="Ask Salem to give you the Oford dictionary definiton of a word. Please note that only 500 requests can be made per month, so do not spam this command out of consideration for others.",
+        value="Ask Salem to give you the WordNet dictionary definiton of a word.",
         inline=False
     )
     embed.set_footer(text="More features coming soon!")
