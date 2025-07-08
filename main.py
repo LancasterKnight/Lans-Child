@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 from flask import Flask
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
+from urllib.parse import quote
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -675,7 +676,7 @@ async def ask(ctx, *, question: str):
 @bot.command()
 async def define(ctx, *, word):
     language = "en-gb"
-    url = f"https://od-api-sandbox.oxforddictionaries.com/api/v2/entries/{language}/{word.lower()}"
+    url = f"https://od-api-sandbox.oxforddictionaries.com/api/v2/entries/{language}/{quote(word.lower())}"
 
     headers = {
         "app_id": OXFORD_APP_ID,
