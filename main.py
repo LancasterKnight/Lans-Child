@@ -675,98 +675,59 @@ async def ask(ctx, *, question: str):
 # --- Dictionary command ---
 @bot.command()
 async def define(ctx, *, word):
-    language = "en-gb"
-    url = f"https://od-api-sandbox.oxforddictionaries.com/api/v2/entries/{language}/{quote(word.lower())}"
-
-    headers = {
-        "app_id": OXFORD_APP_ID,
-        "app_key": OXFORD_APP_KEY
-    }
+    word = word.lower().strip()
+    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{quote(word)}"
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers) as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    print("API response:", data)
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    await ctx.send(f"❌ Sorry, I couldn't find a definition for **{word}**.")
+                    return
 
-                    results = data.get("results", [])
-                    if not results:
-                        await ctx.reply(f"No results found for `{word}`.")
-                        return
+                data = await resp.json()
+                result = data[0]
+                word_text = result.get("word", word)
+                phonetics = result.get("phonetics", [])
+                meanings = result.get("meanings", [])
 
-                    lexical_entries = results[0].get("lexicalEntries", [])
-                    if not lexical_entries:
-                        await ctx.reply(f"No lexical entries found for `{word}`.")
-                        return
+                if not meanings:
+                    await ctx.send(f"⚠️ No meanings found for **{word}**.")
+                    return
 
-                    lexical_entry = lexical_entries[0]  # <--- ADD THIS
-                    part_of_speech = lexical_entry.get("lexicalCategory", {}).get("text", "Unknown")  # <--- ADD THIS
+                meaning = meanings[0]
+                part_of_speech = meaning.get("partOfSpeech", "unknown")
+                definitions = meaning.get("definitions", [])
 
-                    entries = lexical_entry.get("entries", [])
-                    if not entries:
-                        await ctx.reply(f"No entries found for `{word}`.")
-                        return
+                if not definitions:
+                    await ctx.send(f"⚠️ No definitions found for **{word}**.")
+                    return
 
-                    senses = entries[0].get("senses", [])
-                    if not senses:
-                        await ctx.reply(f"No senses found for `{word}`.")
-                        return
+                embed = discord.Embed(
+                    title=f"{word_text.capitalize()} ({part_of_speech})",
+                    color=discord.Color.blue()
+                )
 
-                    # Extract up to 3 definitions
-                    definitions = []
-                    example = ""
+                # Get IPA pronunciation
+                for phon in phonetics:
+                    if "text" in phon:
+                        embed.description = f"Pronunciation: *{phon['text']}*"
+                        break
 
-                    for sense in senses:
-                        defs = sense.get('definitions') or sense.get('shortDefinitions')
-                        if defs:
-                            definitions.append(defs[0])
-
-                        # Try to get example text
-                        if not example:
-                            examples = sense.get('examples')
-                            if examples and len(examples) > 0:
-                                example = examples[0].get('text', '')
-
-                        if len(definitions) >= 3:
-                            break
-
-                    if not definitions:
-                        await ctx.reply(f"⚠️ Couldn't extract definitions for `{word}`.")
-                        return
-
-                    # Get IPA pronunciation (optional)
-                    pronunciations = lexical_entry.get('pronunciations', [])
-                    ipa = ""
-                    for p in pronunciations:
-                        if p.get('phoneticNotation') == 'IPA' and 'phoneticSpelling' in p:
-                            ipa = f"/{p['phoneticSpelling']}/"
-                            break
-
-                    # Format message
-                    message = f"📘 **{word}** (*{part_of_speech}*)"
-                    if ipa:
-                        message += f" — {ipa}"
-                    message += ":"
-
-                    for i, definition in enumerate(definitions, start=1):
-                        message += f"\n`{i}.` {definition}"
-
-                    # Optional example (already extracted)
+                # Add up to 3 definitions
+                for i, d in enumerate(definitions[:3], start=1):
+                    definition = d.get("definition", "—")
+                    example = d.get("example", None)
+                    value = f"{definition}"
                     if example:
-                        message += f"\n✏️ _Example_: {example}"
+                        value += f"\n_Example_: {example}"
+                    embed.add_field(name=f"Definition {i}", value=value, inline=False)
 
-                    define_cache[word] = message
-                    await ctx.reply(message)
-
-                elif resp.status == 404:
-                    await ctx.send(f"Sorry, I couldn't find a definition for **{word}**.")
-                else:
-                    await ctx.send(f"Oxford API error: {resp.status}")
+                await ctx.send(embed=embed)
 
     except Exception as e:
-        await ctx.reply(f"⚠️ An error occurred extracting the definition for `{word}`.")
-        print(f"Error extracting definition: {e}")
+        await ctx.send(f"⚠️ An error occurred while fetching `{word}`.")
+        logger.exception("Error in define command:")
 
 # --- Help command ---
 @bot.command(name='help')
