@@ -675,7 +675,7 @@ async def ask(ctx, *, question: str):
 @bot.command()
 async def define(ctx, *, word):
     language = "en-gb"
-    url = f"https://od-api.oxforddictionaries.com:443/api/v2/entries/{language}/{word.lower()}"
+    url = f"https://od-api-sandbox.oxforddictionaries.com/api/v2/entries/{language}/{word.lower()}"
 
     headers = {
         "app_id": OXFORD_APP_ID,
