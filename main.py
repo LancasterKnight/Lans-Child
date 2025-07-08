@@ -36,6 +36,8 @@ CURRENT_PROMPT_URL = os.getenv("CURRENT_PROMPT_URL")
 CURRENT_PROMPT_UPLOAD_URL = os.getenv("CURRENT_PROMPT_UPLOAD_URL")
 COSMETIC_ROLES_URL = os.getenv("COSMETIC_ROLES_URL")
 COSMETIC_ROLES_UPLOAD_URL = os.getenv("COSMETIC_ROLES_UPLOAD_URL")
+OXFORD_APP_ID = os.getenv("OXFORD_APP_ID")
+OXFORD_APP_KEY = os.getenv("OXFORD_APP_KEY")
 
 app = Flask(__name__)
 
@@ -671,16 +673,9 @@ async def ask(ctx, *, question: str):
 
 # --- Dictionary command ---
 @bot.command()
-async def define(ctx, *, word: str):
-    word = word.lower()
-
-    if word in define_cache:
-        await ctx.reply(define_cache[word])
-        return
-
-    OXFORD_APP_ID = os.getenv("OXFORD_APP_ID")
-    OXFORD_APP_KEY = os.getenv("OXFORD_APP_KEY")
-    url = f"https://od-api.oxforddictionaries.com/api/v2/entries/en-gb/{word}"
+async def define(ctx, *, word):
+    language = "en-gb"
+    url = f"https://od-api.oxforddictionaries.com:443/api/v2/entries/{language}/{word.lower()}"
 
     headers = {
         "app_id": OXFORD_APP_ID,
@@ -688,37 +683,18 @@ async def define(ctx, *, word: str):
     }
 
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers) as response:
-            if response.status != 200:
-                await ctx.reply(f"❌ No definition found for `{word}`.")
-                return
-
-            data = await response.json()
-
-            try:
-                results = data.get('results', [])
-                if not results:
-                    await ctx.reply(f"❌ No results found for `{word}`.")
-                    return
-
-                lexical_entries = results[0].get('lexicalEntries', [])
-                if not lexical_entries:
-                    await ctx.reply(f"❌ No lexical entries found for `{word}`.")
-                    return
-
-                lexical_entry = lexical_entries[0]
-
-                part_of_speech = lexical_entry.get('lexicalCategory', {}).get('text', 'unknown')
-
-                entries = lexical_entry.get('entries', [])
-                if not entries:
-                    await ctx.reply(f"❌ No entries found for `{word}`.")
-                    return
-
-                senses = entries[0].get('senses', [])
-                if not senses:
-                    await ctx.reply(f"❌ No senses found for `{word}`.")
-                    return
+        async with session.get(url, headers=headers) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                try:
+                    definition = data["results"][0]["lexicalEntries"][0]["entries"][0]["senses"][0]["definitions"][0]
+                    await ctx.send(f"**{word.capitalize()}**: {definition}")
+                except (KeyError, IndexError):
+                    await ctx.send(f"Sorry, I couldn't parse the definition for **{word}**.")
+            elif resp.status == 404:
+                await ctx.send(f"Sorry, I couldn't find a definition for **{word}**.")
+            else:
+                await ctx.send(f"Oxford API error: {resp.status}")
 
     # Extract up to 3 definitions, checking for 'definitions' or 'shortDefinitions'
                 definitions = []
