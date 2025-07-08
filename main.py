@@ -700,7 +700,10 @@ async def define(ctx, *, word):
                         await ctx.reply(f"No lexical entries found for `{word}`.")
                         return
 
-                    entries = lexical_entries[0].get("entries", [])
+                    lexical_entry = lexical_entries[0]  # <--- ADD THIS
+                    part_of_speech = lexical_entry.get("lexicalCategory", {}).get("text", "Unknown")  # <--- ADD THIS
+
+                    entries = lexical_entry.get("entries", [])
                     if not entries:
                         await ctx.reply(f"No entries found for `{word}`.")
                         return
@@ -718,13 +721,13 @@ async def define(ctx, *, word):
                         defs = sense.get('definitions') or sense.get('shortDefinitions')
                         if defs:
                             definitions.append(defs[0])
-    
+
                         # Try to get example text
                         if not example:
                             examples = sense.get('examples')
                             if examples and len(examples) > 0:
                                 example = examples[0].get('text', '')
-    
+
                         if len(definitions) >= 3:
                             break
 
@@ -749,8 +752,7 @@ async def define(ctx, *, word):
                     for i, definition in enumerate(definitions, start=1):
                         message += f"\n`{i}.` {definition}"
 
-                    # Optional example
-                    example = senses[0].get('examples', [{}])[0].get('text', '')
+                    # Optional example (already extracted)
                     if example:
                         message += f"\n✏️ _Example_: {example}"
 
