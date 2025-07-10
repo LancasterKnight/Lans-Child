@@ -1,2 +1,2 @@
-Prompt: You discover a second heartbeat inside your chest.
-Timestamp: 2025-07-03T22:06:17.965593Z
+Prompt: Someone is fired from a job.
+Timestamp: 2025-07-10T22:12:32.598224Z
