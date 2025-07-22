@@ -294,7 +294,7 @@ async def on_message(message):
 
     emoji = discord.utils.get(message.guild.emojis, id=emoji_id)
     if not emoji:
-        print("Emoji not found in guild.")  # debug
+        print("❌ Emoji not found in guild.")
         return
 
     count = message.content.count(str(emoji))
@@ -311,8 +311,9 @@ async def on_ready():
 
     print("I am here, father.")
 
-    await load_bonk_count()
-    print(f"🔢 Bonk counter initialized to {bonk_counter}")
+    global bonk_counter
+    bonk_counter = (await load_bonk_count()).get("count", 0)
+    print(f"✅ Logged in as {bot.user} | Bonk count is {bonk_counter}")
 
     await fetch_cosmetic_roles()  # 🔁 Force GitHub fetch on startup
     print(f'Bot is ready. Roles loaded: {COSMETIC_ROLES}')
