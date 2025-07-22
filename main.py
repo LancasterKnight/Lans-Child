@@ -38,8 +38,6 @@ CURRENT_PROMPT_URL = os.getenv("CURRENT_PROMPT_URL")
 CURRENT_PROMPT_UPLOAD_URL = os.getenv("CURRENT_PROMPT_UPLOAD_URL")
 COSMETIC_ROLES_URL = os.getenv("COSMETIC_ROLES_URL")
 COSMETIC_ROLES_UPLOAD_URL = os.getenv("COSMETIC_ROLES_UPLOAD_URL")
-OXFORD_APP_ID = os.getenv("OXFORD_APP_ID")
-OXFORD_APP_KEY = os.getenv("OXFORD_APP_KEY")
 BONK_COUNTER_UPLOAD_URL = os.getenv("BONK_COUNTER_UPLOAD_URL")
 BONK_COUNTER_URL = os.getenv("BONK_COUNTER_URL")
 
@@ -282,28 +280,6 @@ async def save_bonk_count():
             else:
                 print(f"⚠️ Failed to update bonk counter: {put_resp.status}")
 
-@bot.event
-async def on_message(message):
-    await bot.process_commands(message)
-
-    target_user_id = 394034047258460162  # int
-    emoji_id = 863168696498257941  # int
-
-    if message.author.id != target_user_id:
-        return
-
-    emoji = discord.utils.get(message.guild.emojis, id=emoji_id)
-    if not emoji:
-        print("❌ Emoji not found in guild.")
-        return
-
-    count = message.content.count(str(emoji))
-    if count > 0:
-        global bonk_counter
-        bonk_counter += count
-        print(f"Incremented bonk counter by {count}, new count: {bonk_counter}")
-        await save_bonk_count()
-
 # --- Events ---
 @bot.event
 async def on_ready():
@@ -446,25 +422,21 @@ async def on_message(message):
 
     ]
 
-    @bot.event
-    async def on_message(message):
-        if message.author.bot:
-            return  # Ignore bot messages
+    # === Bonk Counter Logic ===
+    target_user_id = 394034047258460162
+    emoji_id = 863168696498257941
 
-        # Only proceed if the message has content (some system messages or embeds don't)
-        if message.content:
-            lowered = message.content.lower()
-            if any(re.search(pattern, lowered) for pattern in trigger_oz):
-                num_responses = len(responses_oz)
-                total_options = num_responses + 1
-
-                choice_index = random.randint(0, total_options - 1)
-
-                if choice_index == 0:
-                    sticker = discord.Object(id=1387840712489308230)
-                    await message.channel.send(stickers=[sticker])
-                else:
-                    await responses_oz[choice_index - 1](message.channel)
+    if message.author.id == target_user_id:
+        emoji = discord.utils.get(message.guild.emojis, id=emoji_id)
+        if emoji:
+            count = message.content.count(str(emoji))
+            if count > 0:
+                global bonk_counter
+                bonk_counter += count
+                print(f"Incremented bonk counter by {count}, new count: {bonk_counter}")
+                await save_bonk_count()
+        else:
+            print("❌ Emoji not found in guild.")
 #---
         await bot.process_commands(message)  # <- This line is required to make !commands work
 
