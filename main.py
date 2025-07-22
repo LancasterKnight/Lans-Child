@@ -234,6 +234,22 @@ async def weekly_prompt_run_once():
 
     await channel.send(embed=embed)
     await save_current_prompt_to_github(current_weekly_prompt)
+    
+# --- bonk counter
+async def count_emoji_usage(guild: discord.Guild, user_id: int, emoji_id: int) -> int:
+    count = 0
+    emoji_str = f"<:_: {emoji_id}>".replace(" ", "")  # Format of custom emoji in messages
+
+    for channel in guild.text_channels:
+        try:
+            async for message in channel.history(limit=1000):  # You can increase or adjust limit
+                if message.author.id == user_id and emoji_str in message.content:
+                    count += message.content.count(emoji_str)
+        except (discord.Forbidden, discord.HTTPException):
+            continue  # Skip channels the bot can't read
+
+    return count
+
 
 # --- Events ---
 @bot.event
@@ -304,7 +320,7 @@ async def on_message(message):
         await message.channel.send(random.choice(response_write))
 #---
 #---    
-    trigger_oven = ["oven", "cooking device"]
+    trigger_oven = [r"\boven\b", "cooking device"]
     response_oven = [
         "HIDE YO CHILDREN!"
     ]
@@ -348,7 +364,7 @@ async def on_message(message):
         await message.channel.send(random.choice(responses_ship))
 #---
 #---
-    trigger_oz = ["oz", "ozma", "ozpin"]
+    trigger_oz = [r"\boz\b", r"\bozma\b", r"\bozpin\b"]
     responses_oz = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
         lambda c: c.send("This is the beginning of the end, Ozpin."),
@@ -610,7 +626,31 @@ async def remove(ctx, member: discord.Member = None):
         await ctx.send(f"✅ Removed: {', '.join(removed)} from {member.display_name}.")
     else:
         await ctx.send(f"ℹ️ No cosmetic roles were removed from {member.display_name}.")
+        
+# --- bonk counter
+@bot.command()
+async def countemoji(ctx):
+    user_id = 394034047258460162
+    emoji_id = 1338311371225432145
+    emoji = discord.utils.get(ctx.guild.emojis, id=emoji_id)
+    
+    if not emoji:
+        await ctx.send("Emoji not found in this server.")
+        return
 
+    emoji_str = str(emoji)  # Formats to <:name:id>
+    count = 0
+
+    for channel in ctx.guild.text_channels:
+        try:
+            async for message in channel.history(limit=1000):  # Adjust as needed
+                if message.author.id == user_id:
+                    count += message.content.count(emoji_str)
+        except (discord.Forbidden, discord.HTTPException):
+            continue
+
+    await ctx.send(f"Les has bonked people {count} times!")
+    
 # --- 8ball ---
 @bot.command(name='ask')
 async def ask(ctx, *, question: str):
