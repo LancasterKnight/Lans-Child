@@ -286,22 +286,23 @@ async def save_bonk_count():
 async def on_message(message):
     await bot.process_commands(message)
 
-    target_user_id = 394034047258460162  # Replace with actual user ID
-    emoji_id = 863168696498257941         # Replace with actual emoji ID as an integer
+    target_user_id = 394034047258460162  # int
+    emoji_id = 863168696498257941  # int
 
     if message.author.id != target_user_id:
         return
 
     emoji = discord.utils.get(message.guild.emojis, id=emoji_id)
     if not emoji:
+        print("Emoji not found in guild.")  # debug
         return
 
-    emoji_str = f"<:{emoji.name}:{emoji.id}>"
-    count = message.content.count(emoji_str)
+    count = message.content.count(str(emoji))
     if count > 0:
         global bonk_counter
         bonk_counter += count
-        await save_bonk_count()  # Make sure this is an async function
+        print(f"Incremented bonk counter by {count}, new count: {bonk_counter}")
+        await save_bonk_count()
 
 # --- Events ---
 @bot.event
