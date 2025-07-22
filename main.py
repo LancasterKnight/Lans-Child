@@ -435,18 +435,22 @@ async def on_message(message):
 
     ]
 
-# In your on_message or message handler:
-if any(re.search(pattern, message.content.lower()) for pattern in trigger_oz):
-    num_responses = len(responses_oz)
-    total_options = num_responses + 1
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return  # Ignore bot messages
 
-    choice_index = random.randint(0, total_options - 1)
+    if any(re.search(pattern, message.content.lower()) for pattern in trigger_oz):
+        num_responses = len(responses_oz)
+        total_options = num_responses + 1
 
-    if choice_index == 0:
-        sticker = discord.Object(id=1387840712489308230)
-        await message.channel.send(stickers=[sticker])
-    else:
-        await responses_oz[choice_index - 1](message.channel)
+        choice_index = random.randint(0, total_options - 1)
+
+        if choice_index == 0:
+            sticker = discord.Object(id=1387840712489308230)
+            await message.channel.send(stickers=[sticker])
+        else:
+            await responses_oz[choice_index - 1](message.channel)
 #---
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
