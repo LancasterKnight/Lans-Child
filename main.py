@@ -287,7 +287,7 @@ async def on_message(message):
     await bot.process_commands(message)
 
     target_user_id = 394034047258460162  # Replace with actual user ID
-    emoji_id = 1338311371225432145       # Replace with actual emoji ID
+    emoji_id = 863168696498257941         # Replace with actual emoji ID as an integer
 
     if message.author.id != target_user_id:
         return
@@ -296,11 +296,12 @@ async def on_message(message):
     if not emoji:
         return
 
-    count = message.content.count(str(emoji))
+    emoji_str = f"<:{emoji.name}:{emoji.id}>"
+    count = message.content.count(emoji_str)
     if count > 0:
         global bonk_counter
         bonk_counter += count
-        await save_bonk_count()
+        await save_bonk_count()  # Make sure this is an async function
 
 # --- Events ---
 @bot.event
