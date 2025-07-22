@@ -246,25 +246,27 @@ async def weekly_prompt_run_once():
 async def load_bonk_count():
     global bonk_counter
     async with aiohttp.ClientSession() as session:
-        async with session.get(BONK_COUNTER_URL, headers=headers) as resp:
+        async with session.get('https://raw.githubusercontent.com/LancasterKnight/Lans-Child/main/bonk_counter.json') as resp:
             if resp.status == 200:
-                data = await resp.json()
-                content = base64.b64decode(data["content"]).decode()
-                bonk_counter = json.loads(content).get("count", 0)
+                text = await resp.text()
+                try:
+                    data = json.loads(text)
+                    bonk_counter = data.get("count", 0)
+                except json.JSONDecodeError:
+                    bonk_counter = 0
             else:
                 bonk_counter = 0
 
+# Save to GitHub JSON
 async def save_bonk_count():
     async with aiohttp.ClientSession() as session:
-        # First get SHA of current file
         async with session.get(BONK_COUNTER_URL, headers=headers) as resp:
             if resp.status != 200:
-                print("Failed to fetch current bonk file.")
+                print("❌ Failed to fetch current bonk file.")
                 return
             file_data = await resp.json()
             sha = file_data["sha"]
 
-        # Prepare new content
         content_json = json.dumps({"count": bonk_counter}, indent=2)
         encoded_content = base64.b64encode(content_json.encode()).decode()
 
@@ -284,6 +286,9 @@ async def save_bonk_count():
 async def on_message(message):
     await bot.process_commands(message)
 
+    target_user_id = 394034047258460162  # Replace with actual user ID
+    emoji_id = 1338311371225432145       # Replace with actual emoji ID
+
     if message.author.id != target_user_id:
         return
 
@@ -291,9 +296,7 @@ async def on_message(message):
     if not emoji:
         return
 
-    emoji_str = str(emoji)
-    count = message.content.count(emoji_str)
-
+    count = message.content.count(str(emoji))
     if count > 0:
         global bonk_counter
         bonk_counter += count
@@ -305,6 +308,9 @@ async def on_ready():
     global COSMETIC_ROLES, current_weekly_prompt
 
     print("I am here, father.")
+
+    await load_bonk_count()
+    print(f"🔢 Bonk counter initialized to {bonk_counter}")
 
     await fetch_cosmetic_roles()  # 🔁 Force GitHub fetch on startup
     print(f'Bot is ready. Roles loaded: {COSMETIC_ROLES}')
