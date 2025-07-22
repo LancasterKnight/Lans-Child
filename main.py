@@ -42,6 +42,10 @@ OXFORD_APP_KEY = os.getenv("OXFORD_APP_KEY")
 
 app = Flask(__name__)
 
+bonk_counter = 0  # You can later load this from a file or API
+target_user_id = 394034047258460162
+emoji_id = 1338311371225432145
+
 @app.route('/')
 def home():
     print("✅ Ping received to keep alive.")
@@ -236,20 +240,36 @@ async def weekly_prompt_run_once():
     await save_current_prompt_to_github(current_weekly_prompt)
     
 # --- bonk counter
-async def count_emoji_usage(guild: discord.Guild, user_id: int, emoji_id: int) -> int:
-    count = 0
-    emoji_str = f"<:_: {emoji_id}>".replace(" ", "")  # Format of custom emoji in messages
+def save_bonks():
+    with open("bonks.json", "w") as f:
+        json.dump({"count": bonk_counter}, f)
 
-    for channel in guild.text_channels:
-        try:
-            async for message in channel.history(limit=1000):  # You can increase or adjust limit
-                if message.author.id == user_id and emoji_str in message.content:
-                    count += message.content.count(emoji_str)
-        except (discord.Forbidden, discord.HTTPException):
-            continue  # Skip channels the bot can't read
+def load_bonks():
+    global bonk_counter
+    try:
+        with open("bonks.json", "r") as f:
+            bonk_counter = json.load(f).get("count", 0)
+    except FileNotFoundError:
+        bonk_counter = 0
 
-    return count
+@bot.event
+async def on_message(message):
+    await bot.process_commands(message)  # Let other commands run too
 
+    if message.author.id != target_user_id:
+        return
+
+    emoji = discord.utils.get(message.guild.emojis, id=emoji_id)
+    if not emoji:
+        return
+
+    emoji_str = str(emoji)
+    count = message.content.count(emoji_str)
+
+    if count > 0:
+        global bonk_counter
+        bonk_counter += count
+        # Optionally: save to file or GitHub here
 
 # --- Events ---
 @bot.event
@@ -629,27 +649,8 @@ async def remove(ctx, member: discord.Member = None):
         
 # --- bonk counter
 @bot.command()
-async def bonk(ctx):
-    user_id = 394034047258460162
-    emoji_id = 1338311371225432145
-    emoji = discord.utils.get(ctx.guild.emojis, id=emoji_id)
-    
-    if not emoji:
-        await ctx.send("Emoji not found in this server.")
-        return
-
-    emoji_str = str(emoji)  # Formats to <:name:id>
-    count = 0
-
-    for channel in ctx.guild.text_channels:
-        try:
-            async for message in channel.history(limit=1000):  # Adjust as needed
-                if message.author.id == user_id:
-                    count += message.content.count(emoji_str)
-        except (discord.Forbidden, discord.HTTPException):
-            continue
-
-    await ctx.send(f"Les has bonked people {count} times!")
+async def bonks(ctx):
+    await ctx.send(f"Les has bonked people {bonk_counter} times!")
     
 # --- 8ball ---
 @bot.command(name='ask')
