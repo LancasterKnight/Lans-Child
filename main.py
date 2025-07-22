@@ -320,7 +320,7 @@ async def on_message(message):
         await message.channel.send(random.choice(response_write))
 #---
 #---    
-    trigger_oven = [r"\boven\b", "cooking device"]
+    trigger_oven = ["\boven\b", "cooking device"]
     response_oven = [
         "HIDE YO CHILDREN!"
     ]
@@ -364,7 +364,7 @@ async def on_message(message):
         await message.channel.send(random.choice(responses_ship))
 #---
 #---
-    trigger_oz = [r"\boz\b", r"\bozma\b", r"\bozpin\b"]
+    trigger_oz = ["\boz\b", "\bozma\b", "\bozpin\b"]
     responses_oz = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
         lambda c: c.send("This is the beginning of the end, Ozpin."),
