@@ -8,6 +8,7 @@ import base64
 import json
 import discord
 import sys
+import re
 
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
@@ -240,21 +241,46 @@ async def weekly_prompt_run_once():
     await save_current_prompt_to_github(current_weekly_prompt)
     
 # --- bonk counter
-def save_bonks():
-    with open("bonks.json", "w") as f:
-        json.dump({"count": bonk_counter}, f)
-
-def load_bonks():
+async def load_bonk_count():
     global bonk_counter
-    try:
-        with open("bonks.json", "r") as f:
-            bonk_counter = json.load(f).get("count", 0)
-    except FileNotFoundError:
-        bonk_counter = 0
+    async with aiohttp.ClientSession() as session:
+        async with session.get(BONK_COUNTER_URL, headers=headers) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                content = base64.b64decode(data["content"]).decode()
+                bonk_counter = json.loads(content).get("count", 0)
+            else:
+                bonk_counter = 0
+
+async def save_bonk_count():
+    async with aiohttp.ClientSession() as session:
+        # First get SHA of current file
+        async with session.get(BONK_COUNTER_URL, headers=headers) as resp:
+            if resp.status != 200:
+                print("Failed to fetch current bonk file.")
+                return
+            file_data = await resp.json()
+            sha = file_data["sha"]
+
+        # Prepare new content
+        content_json = json.dumps({"count": bonk_counter}, indent=2)
+        encoded_content = base64.b64encode(content_json.encode()).decode()
+
+        data = {
+            "message": f"Update bonk count to {bonk_counter}",
+            "content": encoded_content,
+            "sha": sha
+        }
+
+        async with session.put(BONK_COUNTER_UPLOAD_URL, headers=headers, json=data) as put_resp:
+            if put_resp.status in (200, 201):
+                print(f"✅ Bonk counter updated to {bonk_counter}")
+            else:
+                print(f"⚠️ Failed to update bonk counter: {put_resp.status}")
 
 @bot.event
 async def on_message(message):
-    await bot.process_commands(message)  # Let other commands run too
+    await bot.process_commands(message)
 
     if message.author.id != target_user_id:
         return
@@ -269,7 +295,7 @@ async def on_message(message):
     if count > 0:
         global bonk_counter
         bonk_counter += count
-        # Optionally: save to file or GitHub here
+        await save_bonk_count()
 
 # --- Events ---
 @bot.event
@@ -340,7 +366,7 @@ async def on_message(message):
         await message.channel.send(random.choice(response_write))
 #---
 #---    
-    trigger_oven = ["\boven\b", "cooking device"]
+    trigger_oven = ["oven", "cooking device"]
     response_oven = [
         "HIDE YO CHILDREN!"
     ]
@@ -384,7 +410,7 @@ async def on_message(message):
         await message.channel.send(random.choice(responses_ship))
 #---
 #---
-    trigger_oz = ["\boz\b", "\bozma\b", "\bozpin\b"]
+    trigger_oz = [r"\boz\b", r"\bozma\b", r"\bozpin\b"]
     responses_oz = [
         lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
         lambda c: c.send("This is the beginning of the end, Ozpin."),
@@ -409,22 +435,18 @@ async def on_message(message):
 
     ]
 
-    if any(phrase in message.content.lower() for phrase in trigger_oz):
-        # Number of text responses
-        num_responses = len(responses_oz)
+# In your on_message or message handler:
+if any(re.search(pattern, message.content.lower()) for pattern in trigger_oz):
+    num_responses = len(responses_oz)
+    total_options = num_responses + 1
 
-        # Total options = text responses + 1 sticker
-        total_options = num_responses + 1
+    choice_index = random.randint(0, total_options - 1)
 
-        choice_index = random.randint(0, total_options - 1)  # 0 to N inclusive
-
-        if choice_index == 0:
-            # Send sticker
-            sticker = discord.Object(id=1387840712489308230)
-            await message.channel.send(stickers=[sticker])
-        else:
-            # Send one of the text responses (choice_index-1 because 0 is sticker)
-            await responses_oz[choice_index - 1](message.channel)
+    if choice_index == 0:
+        sticker = discord.Object(id=1387840712489308230)
+        await message.channel.send(stickers=[sticker])
+    else:
+        await responses_oz[choice_index - 1](message.channel)
 #---
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
@@ -649,7 +671,8 @@ async def remove(ctx, member: discord.Member = None):
         
 # --- bonk counter
 @bot.command()
-async def bonks(ctx):
+async def bonk(ctx):
+    await load_bonk_count()
     await ctx.send(f"Les has bonked people {bonk_counter} times!")
     
 # --- 8ball ---
