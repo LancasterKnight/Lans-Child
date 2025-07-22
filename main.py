@@ -629,7 +629,7 @@ async def remove(ctx, member: discord.Member = None):
         
 # --- bonk counter
 @bot.command()
-async def countemoji(ctx):
+async def bonk(ctx):
     user_id = 394034047258460162
     emoji_id = 1338311371225432145
     emoji = discord.utils.get(ctx.guild.emojis, id=emoji_id)
@@ -707,7 +707,25 @@ async def ask(ctx, *, question: str):
         "Are you trying to impress me? Because it’s working. In a 'look at this tragic fool' way.",
         "Hazel said no. And Hazel says yes to punching children, so…",
         "Blake ran from this question. That should tell you everything.",
-        "Like the Schnee family, this answer is cursed and inherited."
+        "Like the Schnee family, this answer is cursed and inherited.",
+        "I could answer, but that would imply your question was worth my time.",
+        "You're lucky this orb doesn’t cast judgment.",
+        "A question so foolish, even Tyrian blinked.",
+        "I've raised armies of Grimm with better instincts.",
+        "Imagine thinking that was a good idea.",
+        "Yes. In the same way Adam was a great boyfriend.",
+        "Ask again when you've reached level: competent.",
+        "Even Salem.exe is crashing trying to process that nonsense.",
+        "Cinder tried that once. Now she’s got *personality scars*.",
+        "That's bold coming from someone who gets outsmarted by Nora.",
+        "Oh look, a mortal trying their best. How quaint.",
+        "Darling, your question made even my Grimm whimper.",
+        "Consult a professional. Or someone who cares.",
+        "If cringe were currency, you'd be richer than Jacques Schnee.",
+        "Do it. It’ll be hilarious. For me.",
+        "A wise man once asked that. He died. Horribly. Twice.",
+        "Ruby believes in you. That's how I know you're doomed.",
+        "Even the Relic of Knowledge said 'hard pass' on answering this one."
     ]
 
     await ctx.send(f"🎱 {random.choice(responses)}")
@@ -836,6 +854,11 @@ async def help_command(ctx):
     embed.add_field(
         name="!define [word]",
         value="Ask Salem to give you the WordNet dictionary definiton of a word.",
+        inline=False
+    )
+    embed.add_field(
+        name="!bonk",
+        value="Outputs the number of times Les has bonked you innocent fools :(",
         inline=False
     )
     embed.set_footer(text="More features coming soon!")
