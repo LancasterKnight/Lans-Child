@@ -435,27 +435,27 @@ async def on_message(message):
 
     ]
 
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return  # Ignore bot messages
+    @bot.event
+    async def on_message(message):
+        if message.author.bot:
+            return  # Ignore bot messages
 
-    # Only proceed if the message has content (some system messages or embeds don't)
-    if message.content:
-        lowered = message.content.lower()
-        if any(re.search(pattern, lowered) for pattern in trigger_oz):
-            num_responses = len(responses_oz)
-            total_options = num_responses + 1
+        # Only proceed if the message has content (some system messages or embeds don't)
+        if message.content:
+            lowered = message.content.lower()
+            if any(re.search(pattern, lowered) for pattern in trigger_oz):
+                num_responses = len(responses_oz)
+                total_options = num_responses + 1
 
-            choice_index = random.randint(0, total_options - 1)
+                choice_index = random.randint(0, total_options - 1)
 
-            if choice_index == 0:
-                sticker = discord.Object(id=1387840712489308230)
-                await message.channel.send(stickers=[sticker])
-            else:
-                await responses_oz[choice_index - 1](message.channel)
+                if choice_index == 0:
+                    sticker = discord.Object(id=1387840712489308230)
+                    await message.channel.send(stickers=[sticker])
+                else:
+                    await responses_oz[choice_index - 1](message.channel)
 #---
-    await bot.process_commands(message)  # <- This line is required to make !commands work
+        await bot.process_commands(message)  # <- This line is required to make !commands work
 
 # --- Commands ---
 @bot.before_invoke
