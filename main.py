@@ -43,7 +43,7 @@ BONK_COUNTER_URL = os.getenv("BONK_COUNTER_URL")
 
 app = Flask(__name__)
 
-#bonk_counter = 0  # You can later load this from a file or API
+bonk_counter = 0  # You can later load this from a file or API
 
 @app.route('/')
 def home():
@@ -431,6 +431,7 @@ async def on_message(message):
     emoji_id = 863168696498257941
 
     if message.author.id == target_user_id:
+        global bonk_counter
         print(f"[DEBUG] Message content: {message.content}")
         print(f"[DEBUG] Author ID matched: {message.author.id}")
 
@@ -440,7 +441,6 @@ async def on_message(message):
         print(f"[DEBUG] Found {count} matches.")
 
     if count > 0:
-        global bonk_counter
         bonk_counter += count
         print(f"✅ Bonk counter incremented to: {bonk_counter}")
         await save_bonk_count()
@@ -448,10 +448,10 @@ async def on_message(message):
         print("🔍 No matching emoji found.")
     
     if message.author.id == target_user_id:
+        global bonk_counter
         emoji_str = f"<:WeissBonk:{emoji_id}>"  # Replace 'bonk' with the correct emoji name if different
         count = message.content.count(emoji_str)
         if count > 0:
-            global bonk_counter
             bonk_counter += count
             print(f"✅ Bonk detected. Count: {count}, New total: {bonk_counter}")
             await save_bonk_count()
