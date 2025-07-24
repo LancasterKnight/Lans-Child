@@ -417,11 +417,15 @@ async def on_message(message):
         lambda c: c.send("Honestly, if the gods punished me by turning *him* into my soulmate, I think I got the worse end of the deal."),
         lambda c: c.send("Ozpin’s battle tactics are just variations of ‘Send the children and hope.’ Revolutionary."),
         lambda c: c.send("He talks about hope like it's a strategy. I talk about results like it's reality."),
+        lambda c: c.send("Centuries of reincarnation and *this* is the best vessel you could find? Embarrassing."),
+        lambda c: c.send("If delusion were a weapon, you'd finally be useful, Ozma."),
+        lambda c: c.send("The only thing you lead is a funeral procession."),
+        lambda c: c.send("For someone so obsessed with destiny, you never seem to learn from it."),
 
     ]
 
-    if any(phrase in message.content.lower() for phrase in trigger_oz):
-        await message.channel.send(random.choice(responses_oz))
+    if any(re.search(pattern, message.content.lower()) for pattern in trigger_oz):
+        await random.choice(responses_oz)(message.channel)
 
     # === Bonk Counter Logic ===
     target_user_id = 394034047258460162
