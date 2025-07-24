@@ -433,34 +433,24 @@ async def on_message(message):
         await random.choice(responses_oz)(message.channel)
 
     # === Bonk Counter Logic ===
-    target_user_id = 394034047258460162
-    emoji_id = 863168696498257941
+target_user_id = 394034047258460162
+emoji_id = 863168696498257941
 
-    if message.author.id == target_user_id:
-        emoji_str = f"<:WeissBonk:{emoji_id}>"  # Replace 'bonk' with the actual emoji name
-        count = message.content.count(emoji_str)  # ✅ Always define it
-
-        print(f"[DEBUG] Raw message: {message.content}")
-        print(f"[DEBUG] Checking for emoji: {emoji_str}")
-        print(f"[DEBUG] Found {count} occurrences")
-
-        if count > 0:
-            global bonk_counter
-            bonk_counter += count
-            print(f"✅ Bonk counter incremented to: {bonk_counter}")
-            await save_bonk_count()
-    else:
-        print("🔍 No matching emoji found.")
+if message.author.id == target_user_id:
+    emoji_str = f"<:WeissBonk:{emoji_id}>"
+    count = message.content.count(emoji_str)
     
-    if message.author.id == target_user_id:
-        emoji_str = f"<:WeissBonk:{emoji_id}>"  # Replace 'bonk' with the correct emoji name if different
-        count = message.content.count(emoji_str)
-        if count > 0:
-            bonk_counter += count
-            print(f"✅ Bonk detected. Count: {count}, New total: {bonk_counter}")
-            await save_bonk_count()
-        else:
-            print("🔍 Bonk not found in message.")
+    print(f"[DEBUG] Raw message: {message.content}")
+    print(f"[DEBUG] Checking for emoji: {emoji_str}")
+    print(f"[DEBUG] Found {count} occurrences")
+
+    if count > 0:
+        global bonk_counter
+        bonk_counter += count
+        print(f"✅ Bonk counter incremented to: {bonk_counter}")
+        await save_bonk_count()
+else:
+    print("🔍 No matching emoji found.")
 #---
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
