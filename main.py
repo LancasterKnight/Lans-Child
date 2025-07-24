@@ -243,15 +243,20 @@ async def weekly_prompt_run_once():
 async def load_bonk_count():
     global bonk_counter
     async with aiohttp.ClientSession() as session:
-        async with session.get('https://raw.githubusercontent.com/LancasterKnight/Lans-Child/main/bonk_counter.json') as resp:
+        async with session.get(BONK_COUNTER_URL, headers=headers) as resp:
             if resp.status == 200:
-                text = await resp.text()
+                data = await resp.json()
                 try:
-                    data = json.loads(text)
-                    bonk_counter = data.get("count", 0)
-                except json.JSONDecodeError:
+                    content_b64 = data.get("content")
+                    decoded = base64.b64decode(content_b64).decode()
+                    parsed = json.loads(decoded)
+                    bonk_counter = parsed.get("count", 0)
+                    print(f"[DEBUG] Loaded bonk count from GitHub: {bonk_counter}")
+                except Exception as e:
+                    print(f"❌ Error parsing bonk JSON: {e}")
                     bonk_counter = 0
             else:
+                print(f"❌ Failed to fetch bonk count: {resp.status}")
                 bonk_counter = 0
 
 # Save to GitHub JSON
