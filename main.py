@@ -283,11 +283,10 @@ async def save_bonk_count():
 # --- Events ---
 @bot.event
 async def on_ready():
-    global COSMETIC_ROLES, current_weekly_prompt
+    global COSMETIC_ROLES, current_weekly_prompt, bonk_counter
 
     print("I am here, father.")
 
-    global bonk_counter
     bonk_counter = (await load_bonk_count()).get("count", 0)
     print(f"✅ Logged in as {bot.user} | Bonk count is {bonk_counter}")
 
