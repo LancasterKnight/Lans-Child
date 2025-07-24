@@ -43,7 +43,8 @@ BONK_COUNTER_URL = os.getenv("BONK_COUNTER_URL")
 
 app = Flask(__name__)
 
-#bonk_counter = 0  # You can later load this from a file or API
+global blonk_counter
+bonk_counter = 0  # You can later load this from a file or API
 
 @app.route('/')
 def home():
@@ -431,7 +432,6 @@ async def on_message(message):
     emoji_id = 863168696498257941
 
     if message.author.id == target_user_id:
-        global bonk_counter
         print(f"[DEBUG] Message content: {message.content}")
         print(f"[DEBUG] Author ID matched: {message.author.id}")
 
