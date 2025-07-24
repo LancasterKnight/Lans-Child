@@ -287,7 +287,6 @@ async def on_ready():
 
     print("I am here, father.")
 
-    bonk_counter = (await load_bonk_count()).get("count", 0)
     print(f"✅ Logged in as {bot.user} | Bonk count is {bonk_counter}")
 
     await fetch_cosmetic_roles()  # 🔁 Force GitHub fetch on startup
@@ -440,7 +439,7 @@ async def on_message(message):
         else:
             print("❌ Emoji not found in guild.")
 #---
-        await bot.process_commands(message)  # <- This line is required to make !commands work
+    await bot.process_commands(message)  # <- This line is required to make !commands work
 
 # --- Commands ---
 @bot.before_invoke
