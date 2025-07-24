@@ -43,7 +43,8 @@ BONK_COUNTER_URL = os.getenv("BONK_COUNTER_URL")
 
 app = Flask(__name__)
 
-global blonk_counter
+global bonk_counter
+bonk_counter = 0
 
 @app.route('/')
 def home():
