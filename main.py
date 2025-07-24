@@ -422,6 +422,9 @@ async def on_message(message):
 
     ]
 
+    if any(phrase in message.content.lower() for phrase in trigger_oz):
+        await message.channel.send(random.choice(responses_oz))
+
     # === Bonk Counter Logic ===
     target_user_id = 394034047258460162
     emoji_id = 863168696498257941
