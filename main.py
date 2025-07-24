@@ -431,6 +431,23 @@ async def on_message(message):
     emoji_id = 863168696498257941
 
     if message.author.id == target_user_id:
+    print(f"[DEBUG] Message content: {message.content}")
+    print(f"[DEBUG] Author ID matched: {message.author.id}")
+
+    emoji_str = f"<:WeissBonk:{emoji_id}>"
+    count = message.content.count(emoji_str)
+    print(f"[DEBUG] Looking for emoji: {emoji_str}")
+    print(f"[DEBUG] Found {count} matches.")
+
+    if count > 0:
+        global bonk_counter
+        bonk_counter += count
+        print(f"✅ Bonk counter incremented to: {bonk_counter}")
+        await save_bonk_count()
+    else:
+        print("🔍 No matching emoji found.")
+    
+    if message.author.id == target_user_id:
         emoji_str = f"<:WeissBonk:{emoji_id}>"  # Replace 'bonk' with the correct emoji name if different
         count = message.content.count(emoji_str)
         if count > 0:
@@ -912,6 +929,10 @@ async def test(ctx):
 async def refreshroles(ctx):
     await fetch_cosmetic_roles()
     await ctx.send("🔁 Cosmetic roles refreshed from GitHub.")
+
+@bot.command()
+async def msgdebug(ctx):
+    await ctx.send(f"Message raw: `{ctx.message.content}`")
 
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
