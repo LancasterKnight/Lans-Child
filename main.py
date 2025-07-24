@@ -432,25 +432,25 @@ async def on_message(message):
     if any(re.search(pattern, message.content.lower()) for pattern in trigger_oz):
         await random.choice(responses_oz)(message.channel)
 
-    # === Bonk Counter Logic ===
-target_user_id = 394034047258460162
-emoji_id = 863168696498257941
+# === Bonk Counter Logic ===
+    target_user_id = 394034047258460162
+    emoji_id = 863168696498257941
 
-if message.author.id == target_user_id:
-    emoji_str = f"<:WeissBonk:{emoji_id}>"
-    count = message.content.count(emoji_str)
-    
-    print(f"[DEBUG] Raw message: {message.content}")
-    print(f"[DEBUG] Checking for emoji: {emoji_str}")
-    print(f"[DEBUG] Found {count} occurrences")
+    if message.author.id == target_user_id:
+        emoji_str = f"<:WeissBonk:{emoji_id}>"  # Replace 'bonk' with the actual emoji name
+        count = message.content.count(emoji_str)  # ✅ Always define it
 
-    if count > 0:
-        global bonk_counter
-        bonk_counter += count
-        print(f"✅ Bonk counter incremented to: {bonk_counter}")
-        await save_bonk_count()
-else:
-    print("🔍 No matching emoji found.")
+        print(f"[DEBUG] Raw message: {message.content}")
+        print(f"[DEBUG] Checking for emoji: {emoji_str}")
+        print(f"[DEBUG] Found {count} occurrences")
+
+        if count > 0:
+            global bonk_counter
+            bonk_counter += count
+            print(f"✅ Bonk counter incremented to: {bonk_counter}")
+            await save_bonk_count()
+    else:
+        print("🔍 No matching emoji found.")
 #---
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
