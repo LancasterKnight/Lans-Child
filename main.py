@@ -431,13 +431,13 @@ async def on_message(message):
     emoji_id = 863168696498257941
 
     if message.author.id == target_user_id:
-    print(f"[DEBUG] Message content: {message.content}")
-    print(f"[DEBUG] Author ID matched: {message.author.id}")
+        print(f"[DEBUG] Message content: {message.content}")
+        print(f"[DEBUG] Author ID matched: {message.author.id}")
 
-    emoji_str = f"<:WeissBonk:{emoji_id}>"
-    count = message.content.count(emoji_str)
-    print(f"[DEBUG] Looking for emoji: {emoji_str}")
-    print(f"[DEBUG] Found {count} matches.")
+        emoji_str = f"<:WeissBonk:{emoji_id}>"
+        count = message.content.count(emoji_str)
+        print(f"[DEBUG] Looking for emoji: {emoji_str}")
+        print(f"[DEBUG] Found {count} matches.")
 
     if count > 0:
         global bonk_counter
