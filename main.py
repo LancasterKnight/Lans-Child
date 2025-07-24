@@ -44,8 +44,6 @@ BONK_COUNTER_URL = os.getenv("BONK_COUNTER_URL")
 app = Flask(__name__)
 
 bonk_counter = 0  # You can later load this from a file or API
-target_user_id = 394034047258460162
-emoji_id = 1338311371225432145
 
 @app.route('/')
 def home():
@@ -284,8 +282,9 @@ async def save_bonk_count():
 @bot.event
 async def on_ready():
     global COSMETIC_ROLES, current_weekly_prompt, bonk_counter
-
+    
     print("I am here, father.")
+    await load_bonk_count()
 
     print(f"✅ Logged in as {bot.user} | Bonk count is {bonk_counter}")
 
@@ -432,16 +431,15 @@ async def on_message(message):
     emoji_id = 863168696498257941
 
     if message.author.id == target_user_id:
-        emoji = discord.utils.get(message.guild.emojis, id=emoji_id)
-        if emoji:
-            count = message.content.count(str(emoji))
-            if count > 0:
-                global bonk_counter
-                bonk_counter += count
-                print(f"Incremented bonk counter by {count}, new count: {bonk_counter}")
-                await save_bonk_count()
+        emoji_str = f"<:WeissBonk:{emoji_id}>"  # Replace 'bonk' with the correct emoji name if different
+        count = message.content.count(emoji_str)
+        if count > 0:
+            global bonk_counter
+            bonk_counter += count
+            print(f"✅ Bonk detected. Count: {count}, New total: {bonk_counter}")
+            await save_bonk_count()
         else:
-            print("❌ Emoji not found in guild.")
+            print("🔍 Bonk not found in message.")
 #---
     await bot.process_commands(message)  # <- This line is required to make !commands work
 
