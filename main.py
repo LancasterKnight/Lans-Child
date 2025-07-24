@@ -448,7 +448,6 @@ async def on_message(message):
         print("🔍 No matching emoji found.")
     
     if message.author.id == target_user_id:
-        global bonk_counter
         emoji_str = f"<:WeissBonk:{emoji_id}>"  # Replace 'bonk' with the correct emoji name if different
         count = message.content.count(emoji_str)
         if count > 0:
