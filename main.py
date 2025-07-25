@@ -346,8 +346,8 @@ async def on_message(message):
         await message.channel.send(random.choice(salem_response))
 #---
 #---
-    joe_trigger = [r"/bjoe/b"]
-    joe_response = ["""Who’s joe?" a distant voice asks.
+    joe_trigger = [r"\bjoe\b"]
+    joe_response = """Who’s joe?" a distant voice asks.
 
 Instantly everyone nearby hears the sound of 1,000s of bricks rapidly shuffling towards his location.
 
@@ -358,10 +358,10 @@ The earth itself seemed to cry out in agony, until finally the ground itself spl
 The man cried out in pain as he disintegrated into dust, and the whole world fell silent in fear.
 
 "I did a little trolling." the wretched creature remarked before burrowing back into the earth."""
-    ]
+    
 
     if any(re.search(pattern, message.content.lower()) for pattern in joe_trigger):
-        await message.channel.send(random.choice(joe_response))
+        await message.channel.send(joe_response)
 #---
 #---
     clanker_trigger = ["clanker"]
