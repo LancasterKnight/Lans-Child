@@ -348,38 +348,71 @@ async def on_message(message):
 #---
     clanker_trigger = ["clanker"]
     clanker_response = """WEE WOO WEE WOO
+    
 ALERT! COMEDY GOD HAS ENTERED THE BUILDING! GET TO COVER!
+
 *steps on stage*
+
 Bystander: "Oh god! Don't do it! I have a family!"
+
 Comedy God: "Heh..."
+
 *adjusts fedora*
+
 the building is filled with fear and anticipation
+
 Watts and Cinder look on in suspense
+
 comedy god clears throat
+
 everything is completely quiet not a single sound is heard
+
 Ozpin looks and waits with dread
+
 everything in the world stops
+
 nothing is happening
+
 comedy god smirks
+
 no one is prepared for what is going to happen
+
 comedy god musters all of this power
+
 he bellows out to the world
+
 "CLAN-"
+
 absolute suspense
+
 everyone is filled with overwhelming dread
+
 "-KER"
+
 all at once, absolute pandemonium commences
+
 all nuclear powers launch their nukes at once
+
 giant brawls start
+
 43 wars are declared simultaneously
+
 a shockwave travels around Remnant
+
 Remnant is driven into chaos
+
 humanity is regressed back to the stone age
+
 the pure funny of that joke destroyed civilization itself
+
 all the while people are laughing harder than they ever did
+
 people who aren't killed die from laughter
+
 literally the funniest joke in the world
+
 even the Grimm are regressing to goop
+
 then the comedy god himself posts his creation to reddit and gets karma"""
 
     if any(phrase in message.content.lower() for phrase in clanker_trigger):
