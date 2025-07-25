@@ -360,7 +360,7 @@ The man cried out in pain as he disintegrated into dust, and the whole world fel
 "I did a little trolling." the wretched creature remarked before burrowing back into the earth."""
     ]
 
-    if any(phrase in message.content.lower() for phrase in joe_trigger):
+    if any(re.search(pattern, message.content.lower()) for pattern in trigger_joe):
         await message.channel.send(random.choice(joe_response))
 #---
 #---
