@@ -297,7 +297,7 @@ async def on_ready():
     await fetch_cosmetic_roles()  # 🔁 Force GitHub fetch on startup
     print(f'Bot is ready. Roles loaded: {COSMETIC_ROLES}')
     if not refresh_roles_periodically.is_running():
-        refresh_roles_periodically.start())
+        refresh_roles_periodically.start()
     
     # Fetch the current prompt from GitHub on startup
     current_prompt_data = await fetch_current_prompt()
