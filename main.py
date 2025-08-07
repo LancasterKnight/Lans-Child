@@ -644,14 +644,18 @@ async def listroles(ctx):
             end = start + ROLES_PER_PAGE
             embed.set_footer(text=f"Page {page + 1} of {total_pages}")
 
-            # Default color
+    # Keep your embed color as you like
             embed.color = discord.Color.purple()
 
-            for role_name, desc in role_list[start:end]:
+            page_roles = role_list[start:end]
+            for role_name, desc in page_roles:
                 role = discord.utils.get(ctx.guild.roles, name=role_name)
-                embed.add_field(name=role_name, value=desc, inline=False)
                 if role:
-                    embed.color = role.color or embed.color
+                    field_name = role.mention
+                else:
+                    field_name = role_name
+
+                embed.add_field(name=field_name, value=desc, inline=False)
 
             return embed
 
