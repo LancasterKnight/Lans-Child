@@ -1015,5 +1015,18 @@ async def refreshroles(ctx):
 async def msgdebug(ctx):
     await ctx.send(f"Message raw: `{ctx.message.content}`")
 
+@bot.command()
+async def testroles(ctx):
+    embed = discord.Embed(title="Test Role Mentions")
+    for key, role_name in COSMETIC_ROLES.items():
+        role = discord.utils.get(ctx.guild.roles, name=role_name)
+        print(f"Looking for role '{role_name}' → {'FOUND' if role else 'NOT FOUND'}")
+        if role:
+            embed.add_field(name=role.mention, value=f"Key: `{key}`", inline=False)
+        else:
+            embed.add_field(name=role_name, value="❌ Role not found", inline=False)
+
+    await ctx.send(embed=embed, allowed_mentions=discord.AllowedMentions(roles=False))
+
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
