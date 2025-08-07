@@ -1018,7 +1018,9 @@ async def msgdebug(ctx):
 @bot.command()
 async def testroles(ctx):
     embed = discord.Embed(title="Test Role Mentions")
-    for key, role_name in COSMETIC_ROLES.items():
+    role_items = list(COSMETIC_ROLES.items())[:25]  # ⚠️ Limit to first 25
+
+    for key, role_name in role_items:
         role = discord.utils.get(ctx.guild.roles, name=role_name)
         print(f"Looking for role '{role_name}' → {'FOUND' if role else 'NOT FOUND'}")
         if role:
