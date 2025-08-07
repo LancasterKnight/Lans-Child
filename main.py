@@ -397,7 +397,7 @@ The man cried out in pain as he disintegrated into dust, and the whole world fel
 #---        
     trigger_sic = ["salem, get his ass", "salem, get her ass", "salem, get their ass"]
     response_sic = [
-        """Yes boss. Rettle 'em boys!
+        """Yes boss. Rattle 'em boys!
 https://tenor.com/view/rattle-em-boys-skeleton-skeleton-meme-mafia-spin-gif-14230039151117871605"""
 
     ]
