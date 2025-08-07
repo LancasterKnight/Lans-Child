@@ -44,7 +44,7 @@ BONK_COUNTER_URL = os.getenv("BONK_COUNTER_URL")
 
 app = Flask(__name__)
 
-ROLES_PER_PAGE = 10
+ROLES_PER_PAGE = 15
 bonk_counter = 0
 
 @app.route('/')
@@ -631,7 +631,7 @@ async def listroles(ctx):
 
     class RoleView(discord.ui.View):
         def __init__(self):
-            super().__init__(timeout=60)
+            super().__init__(timeout=180)
             self.current_page = 0
 
         async def update_embed(self, interaction: discord.Interaction):
@@ -663,18 +663,16 @@ async def listroles(ctx):
             if interaction.user != ctx.author:
                 await interaction.response.send_message("You can't control this menu.", ephemeral=True)
                 return
-            if self.current_page > 0:
-                self.current_page -= 1
-                await self.update_embed(interaction)
+            self.current_page = (self.current_page - 1) % total_pages
+            await self.update_embed(interaction)
 
         @discord.ui.button(label="Next ➡️", style=discord.ButtonStyle.secondary)
         async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
             if interaction.user != ctx.author:
                 await interaction.response.send_message("You can't control this menu.", ephemeral=True)
                 return
-            if self.current_page < total_pages - 1:
-                self.current_page += 1
-                await self.update_embed(interaction)
+            self.current_page = (self.current_page + 1) % total_pages
+            await self.update_embed(interaction)
 
         async def on_timeout(self):
             for item in self.children:
