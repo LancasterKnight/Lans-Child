@@ -611,7 +611,7 @@ async def addrole(ctx, key: str = None, *, role_name: str = None):
     COSMETIC_ROLES[key_lower] = role_name
     print(f"[DEBUG] Adding/updating role: {key_lower} → {role_name}")
 
-    success = await save_cosmetic_roles(COSMETIC_ROLES)
+    success = await save_cosmetic_roles()
     if success:
         await ctx.message.delete()
         await fetch_cosmetic_roles()  # Refresh local cache
@@ -651,10 +651,9 @@ async def listroles(ctx):
             for role_name, desc in page_roles:
                 role = discord.utils.get(ctx.guild.roles, name=role_name)
                 if role:
-                    field_name = role.mention
+                    field_name = role.mention  # This will display in the role's color
                 else:
                     field_name = role_name
-
                 embed.add_field(name=field_name, value=desc, inline=False)
 
             return embed
@@ -684,7 +683,8 @@ async def listroles(ctx):
 
     view = RolePages()
     embed = view.generate_embed(0)
-    message = await ctx.send(embed=embed, view=view)
+    allowed_mentions = discord.AllowedMentions(roles=False)
+    message = await ctx.send(embed=embed, view=view, allowed_mentions=allowed_mentions)
 
 # --- Get Cosmetic Role Command ---
 @bot.command()
