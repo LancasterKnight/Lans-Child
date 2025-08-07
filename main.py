@@ -83,15 +83,17 @@ async def fetch_cosmetic_roles():
     async with aiohttp.ClientSession() as session:
         async with session.get(COSMETIC_ROLES_URL, headers=headers) as resp:
             if resp.status == 200:
-                text = await resp.text()
+                file_data = await resp.json()
                 try:
-                    COSMETIC_ROLES = json.loads(text)
+                    # decode content manually
+                    decoded = base64.b64decode(file_data["content"]).decode()
+                    COSMETIC_ROLES = json.loads(decoded)
                     return COSMETIC_ROLES
-                except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse JSON: {e}")
+                except Exception as e:
+                    logger.error(f"❌ Failed to parse JSON: {e}")
                     return {}
             else:
-                logger.error(f"Failed to fetch cosmetic roles: {resp.status}")
+                logger.error(f"❌ Failed to fetch cosmetic roles: {resp.status}")
                 return {}
 
 
@@ -101,33 +103,34 @@ async def refresh_roles_periodically():
     await fetch_cosmetic_roles()
     
 
-async def save_cosmetic_roles_to_github(roles: dict) -> bool:
-    content_b64 = base64.b64encode(json.dumps(roles, indent=2).encode()).decode()
+async def save_cosmetic_roles():
+    global COSMETIC_ROLES
 
     async with aiohttp.ClientSession() as session:
-        # Fetch the file SHA for update
-        async with session.get(COSMETIC_ROLES_UPLOAD_URL, headers=headers) as resp:
+        # Step 1: Get current file SHA
+        async with session.get(COSMETIC_ROLES_URL, headers=headers) as resp:
             if resp.status != 200:
-                print(f"❌ Failed to fetch sha for cosmetic_roles.json: {resp.status}")
-                return False
-            resp_json = await resp.json()
-            sha = resp_json.get("sha")
+                print("❌ Failed to fetch current cosmetic_roles.json.")
+                return
+            file_data = await resp.json()
+            sha = file_data["sha"]
 
-        payload = {
-            "message": "Update cosmetic_roles.json",
-            "content": content_b64,
-            "branch": "main",
+        # Step 2: Prepare correct content (just the dict, not response)
+        content_json = json.dumps(COSMETIC_ROLES, indent=2)  # ✅ Only the dict
+        encoded_content = base64.b64encode(content_json.encode()).decode()
+
+        data = {
+            "message": "Update cosmetic roles",
+            "content": encoded_content,
+            "sha": sha
         }
-        if sha:
-            payload["sha"] = sha
 
-        async with session.put(COSMETIC_ROLES_UPLOAD_URL, headers=headers, data=json.dumps(payload)) as update_resp:
-            if update_resp.status in (200, 201):
-                print("✅ Successfully updated cosmetic_roles.json.")
-                return True
+        # Step 3: Upload it
+        async with session.put(COSMETIC_ROLES_UPLOAD_URL, headers=headers, json=data) as put_resp:
+            if put_resp.status in (200, 201):
+                print("✅ Cosmetic roles updated on GitHub.")
             else:
-                print(f"❌ Failed to update cosmetic_roles.json: {update_resp.status} - {await update_resp.text()}")
-                return False
+                print(f"⚠️ Failed to update cosmetic roles: {put_resp.status}")
 
 async def ensure_cosmetic_roles_fresh():
     global COSMETIC_ROLES
