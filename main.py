@@ -683,7 +683,7 @@ async def listroles(ctx):
 
     view = RolePages()
     embed = view.generate_embed(0)
-    allowed_mentions = discord.AllowedMentions(roles=False)
+    allowed_mentions = discord.AllowedMentions(roles=True, users=False, everyone=False)
     message = await ctx.send(embed=embed, view=view, allowed_mentions=allowed_mentions)
 
 # --- Get Cosmetic Role Command ---
