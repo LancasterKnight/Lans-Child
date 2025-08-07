@@ -626,42 +626,42 @@ async def listroles(ctx):
         await ctx.send("No cosmetic roles available.")
         return
 
-    role_list = list(COSMETIC_ROLES.items())
-    total_pages = math.ceil(len(role_list) / ROLES_PER_PAGE)
+    role_items = list(COSMETIC_ROLES.items())
+    total_pages = math.ceil(len(role_items) / ROLES_PER_PAGE)
 
-    class RolePages(discord.ui.View):
+    class RoleView(discord.ui.View):
         def __init__(self):
             super().__init__(timeout=60)
             self.current_page = 0
 
-        async def update_embed(self, interaction):
+        async def update_embed(self, interaction: discord.Interaction):
             embed = self.generate_embed(self.current_page)
             await interaction.response.edit_message(embed=embed, view=self)
 
         def generate_embed(self, page):
-            embed = discord.Embed(title="🎨 Cosmetic Roles")
             start = page * ROLES_PER_PAGE
             end = start + ROLES_PER_PAGE
-            embed.set_footer(text=f"Page {page + 1} of {total_pages}")
+            description = ""
 
-    # Keep your embed color as you like
-            embed.color = discord.Color.purple()
-
-            page_roles = role_list[start:end]
-            for role_name, desc in page_roles:
+            for key, role_name in role_items[start:end]:
                 role = discord.utils.get(ctx.guild.roles, name=role_name)
                 if role:
-                    field_name = role.mention  # This will display in the role's color
+                    description += f"{role.mention} — `{key}`\n"
                 else:
-                    field_name = role_name
-                embed.add_field(name=field_name, value=desc, inline=False)
+                    description += f"`{role_name}` — not found\n"
 
+            embed = discord.Embed(
+                title="🎨 Cosmetic Roles",
+                description=description,
+                color=discord.Color.blurple()
+            )
+            embed.set_footer(text=f"Page {page + 1} of {total_pages}")
             return embed
 
         @discord.ui.button(label="⬅️ Prev", style=discord.ButtonStyle.secondary)
-        async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+        async def prev(self, interaction: discord.Interaction, button: discord.ui.Button):
             if interaction.user != ctx.author:
-                await interaction.response.send_message("You're not the original requester!", ephemeral=True)
+                await interaction.response.send_message("You can't control this menu.", ephemeral=True)
                 return
             if self.current_page > 0:
                 self.current_page -= 1
@@ -670,21 +670,20 @@ async def listroles(ctx):
         @discord.ui.button(label="Next ➡️", style=discord.ButtonStyle.secondary)
         async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
             if interaction.user != ctx.author:
-                await interaction.response.send_message("You're not the original requester!", ephemeral=True)
+                await interaction.response.send_message("You can't control this menu.", ephemeral=True)
                 return
             if self.current_page < total_pages - 1:
                 self.current_page += 1
                 await self.update_embed(interaction)
 
         async def on_timeout(self):
-            for child in self.children:
-                child.disabled = True
+            for item in self.children:
+                item.disabled = True
             await message.edit(view=self)
 
-    view = RolePages()
+    view = RoleView()
     embed = view.generate_embed(0)
-    allowed_mentions = discord.AllowedMentions(roles=False)
-    message = await ctx.send(embed=embed, view=view, allowed_mentions=allowed_mentions)
+    message = await ctx.send(embed=embed, view=view, allowed_mentions=discord.AllowedMentions(roles=False))
 
 # --- Get Cosmetic Role Command ---
 @bot.command()
