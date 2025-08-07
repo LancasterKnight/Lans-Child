@@ -296,8 +296,8 @@ async def on_ready():
 
     await fetch_cosmetic_roles()  # 🔁 Force GitHub fetch on startup
     print(f'Bot is ready. Roles loaded: {COSMETIC_ROLES}')
-    
-    refresh_roles_periodically.start()
+    if not refresh_roles_periodically.is_running():
+        refresh_roles_periodically.start())
     
     # Fetch the current prompt from GitHub on startup
     current_prompt_data = await fetch_current_prompt()
@@ -365,73 +365,7 @@ The man cried out in pain as he disintegrated into dust, and the whole world fel
 #---
 #---
     clanker_trigger = ["clanker"]
-    clanker_response = """WEE WOO WEE WOO
-    
-ALERT! COMEDY GOD HAS ENTERED THE BUILDING! GET TO COVER!
-
-*steps on stage*
-
-Bystander: "Oh god! Don't do it! I have a family!"
-
-Comedy God: "Heh..."
-
-*adjusts fedora*
-
-the building is filled with fear and anticipation
-
-Watts and Cinder look on in suspense
-
-comedy god clears throat
-
-everything is completely quiet not a single sound is heard
-
-Ozpin looks and waits with dread
-
-everything in the world stops
-
-nothing is happening
-
-comedy god smirks
-
-no one is prepared for what is going to happen
-
-comedy god musters all of this power
-
-he bellows out to the world
-
-"CLAN-"
-
-absolute suspense
-
-everyone is filled with overwhelming dread
-
-"-KER"
-
-all at once, absolute pandemonium commences
-
-all nuclear powers launch their nukes at once
-
-giant brawls start
-
-43 wars are declared simultaneously
-
-a shockwave travels around Remnant
-
-Remnant is driven into chaos
-
-humanity is regressed back to the stone age
-
-the pure funny of that joke destroyed civilization itself
-
-all the while people are laughing harder than they ever did
-
-people who aren't killed die from laughter
-
-literally the funniest joke in the world
-
-even the Grimm are regressing to goop
-
-then the comedy god himself posts his creation to reddit and gets karma"""
+    clanker_response = """You think you're so funny, don't you?"""
 
     if any(phrase in message.content.lower() for phrase in clanker_trigger):
         await message.channel.send(clanker_response)
@@ -440,20 +374,21 @@ then the comedy god himself posts his creation to reddit and gets karma"""
     trigger_write = ["i need to write", "i need to start writing", "i should write", "i should start writing"]
     response_write = [
         "Yes, you really should...",
-        "You always say that yet you never actually start..."
+        "You always say that yet you never actually start...",
+        "You need to sort your priorities."
     ]
     
     if any(phrase in message.content.lower() for phrase in trigger_write):
         await message.channel.send(random.choice(response_write))
 #---
 #---    
-    trigger_oven = ["oven", "cooking device"]
+    trigger_oven = [r"\boven\b", r"\bcooking device\b"]
     response_oven = [
         "HIDE YO CHILDREN!"
     ]
     
-    if any(phrase in message.content.lower() for phrase in trigger_oven):
-        await message.channel.send(random.choice(response_oven))
+    if any(re.search(pattern, message.content.lower()) for pattern in trigger_oven):
+        await random.choice(response_oven)(message.channel)
 #---
 #---        
     trigger_sic = ["salem, get his ass", "salem, get her ass"]
@@ -463,7 +398,10 @@ then the comedy god himself posts his creation to reddit and gets karma"""
     ]
     
     if any(phrase in message.content.lower() for phrase in trigger_sic):
-        await message.channel.send(random.choice(response_sic))
+        if message.channel.permissions_for(message.author).administrator:
+            await message.channel.send(random.choice(response_sic))
+        else:
+            await message.channel.send("Nice try, peasant. Only administrators may summon me.")
 #---
 #---    
     trigger_memes = ["witherose", "dearth"]
