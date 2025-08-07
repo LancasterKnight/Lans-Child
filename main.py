@@ -388,7 +388,7 @@ The man cried out in pain as he disintegrated into dust, and the whole world fel
     ]
     
     if any(re.search(pattern, message.content.lower()) for pattern in trigger_oven):
-        await random.choice(response_oven)(message.channel)
+        await message.channel.send(random.choice(response_oven))
 #---
 #---        
     trigger_sic = ["salem, get his ass", "salem, get her ass"]
