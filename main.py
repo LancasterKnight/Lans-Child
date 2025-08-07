@@ -9,6 +9,7 @@ import json
 import discord
 import sys
 import re
+import math
 
 from discord.ext import commands, tasks
 from dotenv import load_dotenv
@@ -43,7 +44,7 @@ BONK_COUNTER_URL = os.getenv("BONK_COUNTER_URL")
 
 app = Flask(__name__)
 
-#global bonk_counter
+ROLES_PER_PAGE = 10
 bonk_counter = 0
 
 @app.route('/')
@@ -618,15 +619,65 @@ async def addrole(ctx, key: str = None, *, role_name: str = None):
 # --- List Cosmetic Roles Command ---
 @bot.command()
 async def listroles(ctx):
-    global COSMETIC_ROLES
-    await ensure_cosmetic_roles_fresh()
-
     if not COSMETIC_ROLES:
-        await ctx.send("⚠️ No cosmetic roles configured.")
+        await ctx.send("No cosmetic roles available.")
         return
 
-    msg = "\n".join(f"`{k}` → **{v}**" for k, v in COSMETIC_ROLES.items())
-    await ctx.send(f"🎨 Available cosmetic roles:\n{msg}")
+    role_list = list(COSMETIC_ROLES.items())
+    total_pages = math.ceil(len(role_list) / ROLES_PER_PAGE)
+
+    class RolePages(discord.ui.View):
+        def __init__(self):
+            super().__init__(timeout=60)
+            self.current_page = 0
+
+        async def update_embed(self, interaction):
+            embed = self.generate_embed(self.current_page)
+            await interaction.response.edit_message(embed=embed, view=self)
+
+        def generate_embed(self, page):
+            embed = discord.Embed(title="🎨 Cosmetic Roles")
+            start = page * ROLES_PER_PAGE
+            end = start + ROLES_PER_PAGE
+            embed.set_footer(text=f"Page {page + 1} of {total_pages}")
+
+            # Default color
+            embed.color = discord.Color.purple()
+
+            for role_name, desc in role_list[start:end]:
+                role = discord.utils.get(ctx.guild.roles, name=role_name)
+                embed.add_field(name=role_name, value=desc, inline=False)
+                if role:
+                    embed.color = role.color or embed.color
+
+            return embed
+
+        @discord.ui.button(label="⬅️ Prev", style=discord.ButtonStyle.secondary)
+        async def previous(self, interaction: discord.Interaction, button: discord.ui.Button):
+            if interaction.user != ctx.author:
+                await interaction.response.send_message("You're not the original requester!", ephemeral=True)
+                return
+            if self.current_page > 0:
+                self.current_page -= 1
+                await self.update_embed(interaction)
+
+        @discord.ui.button(label="Next ➡️", style=discord.ButtonStyle.secondary)
+        async def next(self, interaction: discord.Interaction, button: discord.ui.Button):
+            if interaction.user != ctx.author:
+                await interaction.response.send_message("You're not the original requester!", ephemeral=True)
+                return
+            if self.current_page < total_pages - 1:
+                self.current_page += 1
+                await self.update_embed(interaction)
+
+        async def on_timeout(self):
+            for child in self.children:
+                child.disabled = True
+            await message.edit(view=self)
+
+    view = RolePages()
+    embed = view.generate_embed(0)
+    message = await ctx.send(embed=embed, view=view)
 
 # --- Get Cosmetic Role Command ---
 @bot.command()
