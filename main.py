@@ -611,7 +611,7 @@ async def addrole(ctx, key: str = None, *, role_name: str = None):
     COSMETIC_ROLES[key_lower] = role_name
     print(f"[DEBUG] Adding/updating role: {key_lower} → {role_name}")
 
-    success = await save_cosmetic_roles_to_github(COSMETIC_ROLES)
+    success = await save_cosmetic_roles(COSMETIC_ROLES)
     if success:
         await ctx.message.delete()
         await fetch_cosmetic_roles()  # Refresh local cache
