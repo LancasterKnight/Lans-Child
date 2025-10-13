@@ -350,22 +350,22 @@ async def on_message(message):
         await message.channel.send(random.choice(salem_response))
 #---
 #---
-    joe_trigger = [r"\bjoe\b"]
-    joe_response = """Who’s joe?" a distant voice asks.
+#    joe_trigger = [r"\bjoe\b"]
+#    joe_response = """Who’s joe?" a distant voice asks.
 
-Instantly everyone nearby hears the sound of 1,000s of bricks rapidly shuffling towards his location.
+#Instantly everyone nearby hears the sound of 1,000s of bricks rapidly shuffling towards his location.
 
-The earth itself seemed to cry out in agony, until finally the ground itself split open and a horrific creature crawled from the ground, covered in mucus and tar.
+#The earth itself seemed to cry out in agony, until finally the ground itself split open and a horrific creature crawled from the ground, covered in mucus and tar.
 
-”Joe Momma…” the creature whispered.
+#”Joe Momma…” the creature whispered.
 
-The man cried out in pain as he disintegrated into dust, and the whole world fell silent in fear.
+#The man cried out in pain as he disintegrated into dust, and the whole world fell silent in fear.
 
-"I did a little trolling." the wretched creature remarked before burrowing back into the earth."""
+#"I did a little trolling." the wretched creature remarked before burrowing back into the earth."""
     
 
-    if any(re.search(pattern, message.content.lower()) for pattern in joe_trigger):
-        await message.channel.send(joe_response)
+#    if any(re.search(pattern, message.content.lower()) for pattern in joe_trigger):
+#        await message.channel.send(joe_response)
 #---
 #---
     clanker_trigger = ["clanker"]
@@ -398,8 +398,9 @@ The man cried out in pain as he disintegrated into dust, and the whole world fel
     trigger_sic = ["salem, get his ass", "salem, get her ass", "salem, get their ass"]
     response_sic = [
         """Yes boss. Rattle 'em boys!
-https://tenor.com/view/rattle-em-boys-skeleton-skeleton-meme-mafia-spin-gif-14230039151117871605"""
-
+https://tenor.com/view/rattle-em-boys-skeleton-skeleton-meme-mafia-spin-gif-14230039151117871605""",
+        """With pleasure, my liege!
+https://tenor.com/en-GB/view/testicular-torsion-testicular-torsion-wizard-gif-5105296058999506050"""
     ]
     
     if any(phrase in message.content.lower() for phrase in trigger_sic):
