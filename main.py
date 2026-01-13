@@ -421,7 +421,7 @@ https://tenor.com/view/testicular-torsion-testicular-torsion-wizard-gif-51052960
         await message.channel.send(random.choice(responses_memes))
 #---
 #---        
-    trigger_ship = ["i love lancaster", "i love whiterose", "i love milk and cereal"]
+    trigger_ship = ["i love lancaster", "i love whiterose", "i love milk and cereal", "i love rosegarden"]
     responses_ship = [
         "Of course you do.",
         "We know...",
@@ -435,37 +435,37 @@ https://tenor.com/view/testicular-torsion-testicular-torsion-wizard-gif-51052960
         await message.channel.send(random.choice(responses_ship))
 #---
 #---
-    trigger_oz = [r"\boz\b", r"\bozma\b", r"\bozpin\b"]
-    responses_oz = [
-        lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
-        lambda c: c.send("This is the beginning of the end, Ozpin."),
-        lambda c: c.send("NO!"),
-        lambda c: c.send("So small, this new host of yours."),
-        lambda c: c.send("My long-lost Ozma, found at last."),
-        lambda c: c.send("The lies come out of you so easily."),
-        lambda c: c.send("Darling, you still owe me half your spine!"),
-        lambda c: c.send("Back from the dead? Pity."),
-        lambda c: c.send("I’d say you’ve aged like wine—but vinegar is more accurate."),
-        lambda c: c.send("Still using that face? Bold."),
-        lambda c: c.send("Ozpin’s greatest power is reincarnation—because failure *that* consistent needs infinite do-overs."),
-        lambda c: c.send("He hides in teenagers like a parasite with a god complex and a dress code."),
-        lambda c: c.send("For a man burdened with centuries of wisdom, he sure makes decisions like a hungover raccoon."),
-        lambda c: c.send("Ozpin’s idea of strategy? Cryptic riddles and a prayer that the children figure it out."),
-        lambda c: c.send("If I had a Lien for every time he said 'You must trust me' before everything exploded, I’d fund a second war."),
-        lambda c: c.send("He drinks hot chocolate like it holds the answers to his mistakes. It doesn’t, Ozma."),
-        lambda c: c.send("He’s the only immortal I know who dies more often than he makes a decent plan."),
-        lambda c: c.send("Honestly, if the gods punished me by turning *him* into my soulmate, I think I got the worse end of the deal."),
-        lambda c: c.send("Ozpin’s battle tactics are just variations of ‘Send the children and hope.’ Revolutionary."),
-        lambda c: c.send("He talks about hope like it's a strategy. I talk about results like it's reality."),
-        lambda c: c.send("Centuries of reincarnation and *this* is the best vessel you could find? Embarrassing."),
-        lambda c: c.send("If delusion were a weapon, you'd finally be useful, Ozma."),
-        lambda c: c.send("The only thing you lead is a funeral procession."),
-        lambda c: c.send("For someone so obsessed with destiny, you never seem to learn from it."),
+#    trigger_oz = [r"\boz\b", r"\bozma\b", r"\bozpin\b"]
+#    responses_oz = [
+#        lambda c: c.send("*REEEEEEEEEEEEEEEEEEEEE*"),
+#        lambda c: c.send("This is the beginning of the end, Ozpin."),
+#        lambda c: c.send("NO!"),
+#        lambda c: c.send("So small, this new host of yours."),
+#        lambda c: c.send("My long-lost Ozma, found at last."),
+#        lambda c: c.send("The lies come out of you so easily."),
+#        lambda c: c.send("Darling, you still owe me half your spine!"),
+#        lambda c: c.send("Back from the dead? Pity."),
+#        lambda c: c.send("I’d say you’ve aged like wine—but vinegar is more accurate."),
+#        lambda c: c.send("Still using that face? Bold."),
+#        lambda c: c.send("Ozpin’s greatest power is reincarnation—because failure *that* consistent needs infinite do-overs."),
+#        lambda c: c.send("He hides in teenagers like a parasite with a god complex and a dress code."),
+#        lambda c: c.send("For a man burdened with centuries of wisdom, he sure makes decisions like a hungover raccoon."),
+#        lambda c: c.send("Ozpin’s idea of strategy? Cryptic riddles and a prayer that the children figure it out."),
+#        lambda c: c.send("If I had a Lien for every time he said 'You must trust me' before everything exploded, I’d fund a second war."),
+#        lambda c: c.send("He drinks hot chocolate like it holds the answers to his mistakes. It doesn’t, Ozma."),
+#        lambda c: c.send("He’s the only immortal I know who dies more often than he makes a decent plan."),
+#        lambda c: c.send("Honestly, if the gods punished me by turning *him* into my soulmate, I think I got the worse end of the deal."),
+#        lambda c: c.send("Ozpin’s battle tactics are just variations of ‘Send the children and hope.’ Revolutionary."),
+#        lambda c: c.send("He talks about hope like it's a strategy. I talk about results like it's reality."),
+#        lambda c: c.send("Centuries of reincarnation and *this* is the best vessel you could find? Embarrassing."),
+#        lambda c: c.send("If delusion were a weapon, you'd finally be useful, Ozma."),
+#        lambda c: c.send("The only thing you lead is a funeral procession."),
+#        lambda c: c.send("For someone so obsessed with destiny, you never seem to learn from it."),
 
-    ]
+#    ]
 
-    if any(re.search(pattern, message.content.lower()) for pattern in trigger_oz):
-        await random.choice(responses_oz)(message.channel)
+#    if any(re.search(pattern, message.content.lower()) for pattern in trigger_oz):
+#        await random.choice(responses_oz)(message.channel)
 
 # === Bonk Counter Logic ===
     target_user_id = 394034047258460162
