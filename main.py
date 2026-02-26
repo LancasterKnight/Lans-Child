@@ -316,14 +316,17 @@ async def on_ready():
     if not prompt_scheduler.is_running():
         prompt_scheduler.start()
 
-@tasks.loop(hours=1)
+@tasks.loop(time=datetime.time(hour=12, tzinfo=timezone.utc))
 async def prompt_scheduler():
-    print("🕒 Checking if weekly prompt needs to update...")
-    if await should_run_weekly_prompt():
-        print("✅ It's time! Posting a new weekly prompt.")
-        await weekly_prompt_run_once()
-    else:
-        print("⏳ Not time yet for a new prompt.")
+    try:
+        print("🕒 Checking if weekly prompt needs to update...")
+        if await should_run_weekly_prompt():
+            print("✅ It's time! Posting a new weekly prompt.")
+            await weekly_prompt_run_once()
+        else:
+            print("⏳ Not time yet for a new prompt.")
+    except Exception as e:
+        print(f"❌ Scheduler crashed with error: {e}")
 
 @bot.event
 async def on_guild_join(guild):
