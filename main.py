@@ -986,7 +986,7 @@ async def help_command(ctx):
 
 
 # --- Keep-Alive Counter ---
-@tasks.loop(minutes=1)
+@tasks.loop(minutes=5)
 async def keep_alive_counter():
     global counter, counter_message
     channel = bot.get_channel(COUNTER_CHANNEL_ID)
