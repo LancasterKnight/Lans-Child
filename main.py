@@ -993,7 +993,7 @@ async def keep_alive_counter():
     if not channel:
         print("❌ Keep-alive channel not found.")
         return
-    counter += 1
+    counter += 5
     try:
         if counter_message is None:
             counter_message = await channel.send(f"⏱️ Keep-alive counter: `{counter}` minutes")
