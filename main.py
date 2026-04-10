@@ -316,7 +316,7 @@ async def on_ready():
     if not prompt_scheduler.is_running():
         prompt_scheduler.start()
 
-@tasks.loop(hours=12)
+@tasks.loop(hours=6)
 async def prompt_scheduler():
     try:
         print("🕒 Checking if weekly prompt needs to update...")
