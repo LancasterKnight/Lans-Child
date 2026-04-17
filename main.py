@@ -403,7 +403,9 @@ async def on_message(message):
         """Yes boss. Rattle 'em boys!
 https://tenor.com/view/rattle-em-boys-skeleton-skeleton-meme-mafia-spin-gif-14230039151117871605""",
         """With pleasure, my liege!
-https://tenor.com/view/testicular-torsion-testicular-torsion-wizard-gif-5105296058999506050"""
+https://tenor.com/view/ena-wizard-ena-wizard-ena-wizard-dance-wizard-dance-gif-27577648""",
+        """It shall be done, in the name of God!!
+https://tenor.com/view/shotgun-killing-me-deusvult-gif-20969969"""
     ]
     
     if any(phrase in message.content.lower() for phrase in trigger_sic):
