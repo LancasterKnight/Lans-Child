@@ -142,28 +142,41 @@ async def ensure_cosmetic_roles_fresh():
 
 # --- Prompt Utilities ---
 async def should_run_weekly_prompt():
-    request_headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github.v3+json"
-    }
     async with aiohttp.ClientSession() as session:
         async with session.get(CURRENT_PROMPT_UPLOAD_URL, headers=headers) as resp:
-            if resp.status == 200:
-                data = await resp.json()
-                content_b64 = data.get("content")
-                if content_b64:
-                    content = base64.b64decode(content_b64).decode()
-                    lines = content.splitlines()
-                    for line in lines:
-                        if line.startswith("Timestamp:"):
-                            timestamp_str = line.replace("Timestamp:", "").strip()
-                            last_time = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))  # UTC aware
-                            now_local = datetime.now(LOCAL_TZ)
-                            now_utc = now_local.astimezone(timezone.utc)
-                            delta = now_utc - last_time
-                            print(f"⏱️ It's been {delta.days} days since last prompt.")
-                            return delta > timedelta(days=7)
-            print("⚠️ No timestamp found. Resetting prompt.")
+            if resp.status != 200:
+                return True  # fail open if file missing
+
+            data = await resp.json()
+            content_b64 = data.get("content")
+            if not content_b64:
+                return True
+
+            content = base64.b64decode(content_b64).decode()
+            last_time = None
+
+            for line in content.splitlines():
+                if line.startswith("Timestamp:"):
+                    timestamp_str = line.replace("Timestamp:", "").strip()
+                    last_time = datetime.fromisoformat(
+                        timestamp_str.replace("Z", "+00:00")
+                    ).astimezone(LOCAL_TZ)
+                    break
+
+            now_local = datetime.now(LOCAL_TZ)
+
+            # Only allow posting on Friday at or after 14:00 local time
+            if now_local.weekday() != 4:
+                return False
+            if (now_local.hour, now_local.minute) < (14, 0):
+                return False
+
+            # If we've already posted during this Friday 14:00 window, do not post again
+            target_time = now_local.replace(hour=14, minute=0, second=0, microsecond=0)
+
+            if last_time and last_time >= target_time:
+                return False
+
             return True
 
 async def fetch_prompts():
@@ -316,7 +329,7 @@ async def on_ready():
     if not prompt_scheduler.is_running():
         prompt_scheduler.start()
 
-@tasks.loop(hours=6)
+@tasks.loop(hours=1)
 async def prompt_scheduler():
     try:
         print("🕒 Checking if weekly prompt needs to update...")
