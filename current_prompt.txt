@@ -1,2 +1,2 @@
-Prompt: You inherit a cabin. It has no doors.
-Timestamp: 2026-06-20T13:19:58.449650Z
+Prompt: A power struggle takes place.
+Timestamp: 2026-06-26T12:17:49.444415Z
