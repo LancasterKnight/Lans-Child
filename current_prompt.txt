@@ -1,2 +1,2 @@
-Prompt: A child draws something — and it becomes real.
-Timestamp: 2026-07-10T09:17:52.563132Z
+Prompt: Your protagonist finds a message in a bottle... from themselves.
+Timestamp: 2026-07-10T12:17:49.783760Z
