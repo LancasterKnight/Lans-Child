@@ -1,2 +1,2 @@
-Prompt: You discover a second heartbeat inside your chest.
-Timestamp: 2026-08-21T12:17:50.035269Z
+Prompt: Two strangers meet in a laundromat at 2 AM.
+Timestamp: 2026-08-28T12:17:49.578036Z
