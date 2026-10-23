@@ -1,2 +1,2 @@
-Prompt: Your protagonist finds a message in a bottle... from themselves.
-Timestamp: 2026-10-16T12:17:49.531544Z
+Prompt: You find a door labeled 'Do Not Open.' It opens itself.
+Timestamp: 2026-10-23T12:17:49.693148Z
